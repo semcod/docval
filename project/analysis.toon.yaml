@@ -1,0 +1,52 @@
+# code2llm | 17f 2007L | python:16,shell:1 | 2026-04-13
+# CC̄=6.3 | critical:3/56 | dups:0 | cycles:1
+
+HEALTH[3]:
+  🟡 CC    _extract_python_symbols CC=18 (limit:15)
+  🟡 CC    report CC=19 (limit:15)
+  🟡 CC    execute CC=17 (limit:15)
+
+REFACTOR[2]:
+  1. split 3 high-CC methods  (CC>15)
+  2. break 1 circular dependencies
+
+PIPELINES[42]:
+  [1] Src [scan]: scan → build_context → _collect_src_files
+      PURITY: 100% pure
+  [2] Src [main]: main
+      PURITY: 100% pure
+  [3] Src [scan]: scan
+      PURITY: 100% pure
+  [4] Src [fix]: fix
+      PURITY: 100% pure
+  [5] Src [patch]: patch
+      PURITY: 100% pure
+
+LAYERS:
+  src/                            CC̄=6.3    ←in:0  →out:0
+  │ cli                        261L  0C    5m  CC=12     ←0
+  │ llm_validator              249L  1C    6m  CC=9      ←0
+  │ !! context                    242L  0C    9m  CC=18     ←1
+  │ heuristic                  205L  1C   10m  CC=9      ←0
+  │ crossref                   169L  1C    6m  CC=11     ←0
+  │ console                    165L  1C    6m  CC=10     ←0
+  │ models                     148L  8C    3m  CC=4      ←0
+  │ !! executor                   142L  2C    5m  CC=17     ←0
+  │ chunker                    111L  0C    3m  CC=12     ←2
+  │ !! markdown_report            100L  1C    1m  CC=19     ←0
+  │ pipeline                    95L  0C    1m  CC=12     ←0
+  │ json_report                 66L  1C    1m  CC=5      ←0
+  │ __init__                     6L  0C    0m  CC=0.0    ←0
+  │ __init__                     6L  0C    0m  CC=0.0    ←0
+  │ __init__                     4L  0C    0m  CC=0.0    ←0
+  │ __init__                     3L  0C    0m  CC=0.0    ←0
+  │
+  ./                              CC̄=0.0    ←in:0  →out:0
+  │ project.sh                  35L  0C    0m  CC=0.0    ←0
+  │
+
+COUPLING: no cross-package imports detected
+
+EXTERNAL:
+  validation: run `vallm batch .` → validation.toon
+  duplication: run `redup scan .` → duplication.toon

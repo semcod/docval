@@ -1,0 +1,88 @@
+# docval | 17f 2007L | shell:1,python:16 | 2026-04-13
+# stats: 56 func | 0 cls | 17 mod | CC̄=6.3 | critical:3 | cycles:0
+# alerts[5]: CC MarkdownReporter.report=19; CC _extract_python_symbols=18; CC ActionExecutor.execute=17; fan-out _extract_python_symbols=16; fan-out chunk_file=16
+# hotspots[5]: chunk_file fan=16; fix fan=16; _extract_python_symbols fan=16; scan fan=15; scan fan=13
+# evolution: CC̄ 6.3→6.3 (flat 0.0)
+# Keys: M=modules, D=details, i=imports, e=exports, c=classes, f=functions, m=methods
+M[17]:
+  project.sh,35
+  src/docval/__init__.py,3
+  src/docval/actions/__init__.py,4
+  src/docval/actions/executor.py,142
+  src/docval/chunker.py,111
+  src/docval/cli.py,261
+  src/docval/context.py,242
+  src/docval/models.py,148
+  src/docval/pipeline.py,95
+  src/docval/reporters/__init__.py,6
+  src/docval/reporters/console.py,165
+  src/docval/reporters/json_report.py,66
+  src/docval/reporters/markdown_report.py,100
+  src/docval/validators/__init__.py,6
+  src/docval/validators/crossref.py,169
+  src/docval/validators/heuristic.py,205
+  src/docval/validators/llm_validator.py,249
+D:
+  src/docval/reporters/markdown_report.py:
+    e: MarkdownReporter
+    MarkdownReporter: report(2)  # Generate a Markdown report of validation results...
+  src/docval/context.py:
+    e: build_context,_collect_src_files,_extract_python_symbols,_decorator_name,_extract_version,_extract_dependencies,_parse_toon_files,_collect_git_info,_build_dir_tree
+    build_context(project_root;max_depth)
+    _collect_src_files(ctx;root;max_depth)
+    _extract_python_symbols(ctx;root)
+    _decorator_name(dec)
+    _extract_version(ctx;root)
+    _extract_dependencies(ctx;root)
+    _parse_toon_files(ctx;root)
+    _collect_git_info(ctx;root)
+    _build_dir_tree(ctx;root;max_depth)
+  src/docval/actions/executor.py:
+    e: ActionResult,ActionExecutor
+    ActionResult:  # Summary of executed actions...
+    ActionExecutor: __init__(2),execute(2),_delete_sections(2),_archive_file(2),generate_patch(1)  # Execute remediation actions on doc files...
+  src/docval/chunker.py:
+    e: chunk_file,discover_md_files,chunk_directory
+    chunk_file(path;base_dir)
+    discover_md_files(docs_dir;exclude_patterns)
+    chunk_directory(docs_dir;exclude_patterns)
+  src/docval/pipeline.py:
+    e: scan
+    scan(docs_dir;project_root;exclude;use_llm;llm_model;verbose)
+  src/docval/cli.py:
+    e: main,scan,fix,patch,stats
+    main()
+    scan(docs_dir;project;exclude;llm;model;output;verbose)
+    fix(docs_dir;project;exclude;force;archive_dir;dry_run;llm;model;verbose)
+    patch(docs_dir;project;exclude;output;llm;model)
+    stats(docs_dir;exclude)
+  src/docval/validators/crossref.py:
+    e: CrossRefValidator
+    CrossRefValidator: __init__(1),_build_symbol_set(0),validate(1),_check_code_references(1),_check_import_paths(1),_check_cli_commands(1)  # Validate documentation references against actual project cod...
+  src/docval/reporters/console.py:
+    e: ConsoleReporter
+    ConsoleReporter: __init__(1),report(1),_print_summary(1),_print_issues_table(1),_print_details(1),_report_plain(1)  # Print validation results to the console using rich...
+  src/docval/validators/llm_validator.py:
+    e: LLMValidator
+    LLMValidator: __init__(5),validate(2),_validate_chunk(3),_build_prompt(2),_build_context_summary(0),_parse_response(1)  # Validate documentation chunks using an LLM via litellm...
+  src/docval/validators/heuristic.py:
+    e: HeuristicValidator
+    HeuristicValidator: __init__(1),validate(1),_check_empty(1),_check_outdated_markers(1),_check_broken_internal_links(2),_check_todo_fixme(1),_check_archive_path(2),_check_stale_versions(1),_check_duplicates(1),_check_minimal_content(1)  # Apply fast heuristic rules to doc chunks before LLM validati...
+  src/docval/reporters/json_report.py:
+    e: JSONReporter
+    JSONReporter: report(2)  # Generate a JSON report of validation results...
+  src/docval/models.py:
+    e: ChunkStatus,ActionType,Severity,Issue,DocChunk,DocFile,ProjectContext,ValidationResult
+    ChunkStatus(str,enum.Enum):
+    ActionType(str,enum.Enum):
+    Severity(str,enum.Enum):
+    Issue:  # A single validation issue found in a doc chunk...
+    DocChunk: add_issue(4)  # A semantic chunk extracted from a Markdown file...
+    DocFile:  # Represents a single Markdown file with its chunks...
+    ProjectContext:  # Gathered context about the project for cross-referencing...
+    ValidationResult: update_counts(0),_count(1)  # Aggregated result of a validation run...
+  project.sh:
+  src/docval/__init__.py:
+  src/docval/actions/__init__.py:
+  src/docval/validators/__init__.py:
+  src/docval/reporters/__init__.py:

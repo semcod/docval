@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>code2llm Analysis Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/json.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/languages/yaml.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --surface-hover: #334155;
+            --border: #475569;
+            --text: #e2e8f0;
+            --text-muted: #94a3b8;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #22c55e;
+            --warning: #eab308;
+            --error: #ef4444;
+        }
+        
+        @media (prefers-color-scheme: light) {
+            :root {
+                --bg: #f8fafc;
+                --surface: #ffffff;
+                --surface-hover: #f1f5f9;
+                --border: #e2e8f0;
+                --text: #1e293b;
+                --text-muted: #64748b;
+            }
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            height: 100vh;
+            overflow: hidden;
+        }
+        
+        .container {
+            display: grid;
+            grid-template-columns: 320px 1fr;
+            height: 100vh;
+        }
+        
+        /* Sidebar */
+        .sidebar {
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .header {
+            padding: 1.25rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .header h1 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            margin-top: 0.25rem;
+        }
+        
+        .search {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .search input {
+            width: 100%;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            color: var(--text);
+            font-size: 0.875rem;
+            outline: none;
+        }
+        
+        .search input:focus {
+            border-color: var(--accent);
+        }
+        
+        .search input::placeholder {
+            color: var(--text-muted);
+        }
+        
+        .file-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0.5rem;
+        }
+        
+        .file-group {
+            margin-bottom: 1rem;
+        }
+        
+        .file-group-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            padding: 0.5rem 0.75rem;
+            font-weight: 600;
+        }
+        
+        .file-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: background 0.15s;
+            font-size: 0.875rem;
+        }
+        
+        .file-item:hover {
+            background: var(--surface-hover);
+        }
+        
+        .file-item.active {
+            background: var(--accent);
+            color: white;
+        }
+        
+        .file-item.active .file-meta {
+            color: rgba(255,255,255,0.7);
+        }
+        
+        .file-icon {
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .file-info {
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .file-name {
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .file-meta {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        
+        .file-size {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+        
+        .empty-state {
+            padding: 2rem;
+            text-align: center;
+            color: var(--text-muted);
+        }
+        
+        /* Main content */
+        .content {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .content-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+            background: var(--surface);
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .content-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .content-title h2 {
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        .content-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn {
+            padding: 0.5rem 1rem;
+            background: var(--surface-hover);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            color: var(--text);
+            font-size: 0.875rem;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.15s;
+        }
+        
+        .btn:hover {
+            background: var(--border);
+        }
+        
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+        
+        .btn-primary:hover {
+            background: var(--accent-hover);
+        }
+        
+        .content-body {
+            flex: 1;
+            overflow: auto;
+            padding: 1.5rem;
+        }
+        
+        .welcome {
+            max-width: 600px;
+            margin: 2rem auto;
+            text-align: center;
+        }
+        
+        .welcome h2 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .welcome p {
+            color: var(--text-muted);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        
+        .stat-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent);
+        }
+        
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+        
+        pre {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            overflow-x: auto;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        
+        /* Markdown rendered content styles */
+        .markdown-content {
+            line-height: 1.6;
+            max-width: 100%;
+        }
+        
+        .markdown-content h1, .markdown-content h2, .markdown-content h3,
+        .markdown-content h4, .markdown-content h5, .markdown-content h6 {
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+            font-weight: 600;
+            line-height: 1.3;
+        }
+        
+        .markdown-content h1 { font-size: 1.75rem; border-bottom: 2px solid var(--border); padding-bottom: 0.5rem; }
+        .markdown-content h2 { font-size: 1.5rem; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; }
+        .markdown-content h3 { font-size: 1.25rem; }
+        .markdown-content h4 { font-size: 1.1rem; }
+        
+        .markdown-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content ul, .markdown-content ol {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+        }
+        
+        .markdown-content li {
+            margin-bottom: 0.25rem;
+        }
+        
+        .markdown-content code {
+            background: var(--surface);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+            font-size: 0.875em;
+        }
+        
+        .markdown-content pre code {
+            background: none;
+            padding: 0;
+        }
+        
+        .markdown-content blockquote {
+            border-left: 4px solid var(--accent);
+            padding-left: 1rem;
+            margin-left: 0;
+            margin-bottom: 1rem;
+            color: var(--text-muted);
+        }
+        
+        .markdown-content table {
+            border-collapse: collapse;
+            width: 100%;
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content th, .markdown-content td {
+            border: 1px solid var(--border);
+            padding: 0.5rem 0.75rem;
+            text-align: left;
+        }
+        
+        .markdown-content th {
+            background: var(--surface);
+            font-weight: 600;
+        }
+        
+        .markdown-content tr:nth-child(even) {
+            background: var(--surface-hover);
+        }
+        
+        .markdown-content a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        
+        .markdown-content a:hover {
+            text-decoration: underline;
+        }
+        
+        .markdown-content img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+        }
+        
+        .markdown-content hr {
+            border: none;
+            border-top: 1px solid var(--border);
+            margin: 1.5rem 0;
+        }
+        
+        /* Mermaid diagram styles */
+        .mermaid-content {
+            display: flex;
+            justify-content: center;
+            padding: 1rem;
+            background: var(--surface);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .mermaid-content .mermaid {
+            background: transparent;
+        }
+        
+        /* Image preview styles */
+        .image-preview {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            padding: 1rem;
+            background: var(--surface);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+        }
+        
+        .image-preview img {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        /* Mobile responsive */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid var(--border);
+                max-height: 40vh;
+            }
+            
+            .file-list {
+                display: flex;
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                gap: 0.25rem;
+                padding: 0.5rem;
+            }
+            
+            .file-group {
+                display: flex;
+                flex-direction: row;
+                margin: 0;
+            }
+            
+            .file-group-title {
+                display: none;
+            }
+            
+            .file-item {
+                flex-direction: column;
+                min-width: 80px;
+                padding: 0.5rem;
+                text-align: center;
+            }
+            
+            .file-info {
+                display: none;
+            }
+            
+            .file-size {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <aside class="sidebar">
+            <div class="header">
+                <h1>🔍 code2llm</h1>
+                <p>Analysis Results Browser</p>
+            </div>
+            <div class="search">
+                <input type="text" id="search" placeholder="Search files..." oninput="filterFiles(this.value)">
+            </div>
+            <div class="file-list" id="fileList">
+                <!-- Files will be rendered here -->
+            </div>
+        </aside>
+        
+        <main class="content">
+            <div class="content-header">
+                <div class="content-title">
+                    <span id="contentIcon">📁</span>
+                    <h2 id="contentTitle">Welcome</h2>
+                </div>
+                <div class="content-actions" id="contentActions">
+                    <!-- Actions will be rendered here -->
+                </div>
+            </div>
+            <div class="content-body" id="contentBody">
+                <div class="welcome">
+                    <h2>Analysis Results</h2>
+                    <p>Select a file from the sidebar to view its contents. This interface works on GitHub Pages without any server required.</p>
+                    <div class="stats-grid" id="statsGrid">
+                        <!-- Stats will be rendered here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Initialize mermaid
+        mermaid.initialize({ startOnLoad: false, theme: 'dark' });
+        
+        const files = [{"name": "calls.png", "rel_path": "calls.png", "path": "calls.png", "size": "43.5KB", "icon": "🖼️", "type": "image", "type_name": "Image", "content": "[Binary file]", "is_subdir": false}, {"name": "compact_flow.png", "rel_path": "compact_flow.png", "path": "compact_flow.png", "size": "2.4KB", "icon": "🖼️", "type": "image", "type_name": "Image", "content": "[Binary file]", "is_subdir": false}, {"name": "flow.png", "rel_path": "flow.png", "path": "flow.png", "size": "19.7KB", "icon": "🖼️", "type": "image", "type_name": "Image", "content": "[Binary file]", "is_subdir": false}, {"name": "README.md", "rel_path": "README.md", "path": "README.md", "size": "9.3KB", "icon": "📝", "type": "markdown", "type_name": "Markdown", "content": "# code2llm - Generated Analysis Files\n\nThis directory contains the complete analysis of your project generated by `code2llm`. Each file serves a specific purpose for understanding, refactoring, and documenting your codebase.\n\n## 📁 Generated Files Overview\n\nWhen you run `code2llm ./ -f all`, the following files are created:\n\n### 🎯 Core Analysis Files\n\n| File | Format | Purpose | Key Insights |\n|------|--------|---------|--------------|\n| `evolution.toon.yaml` | **YAML** | **📋 Refactoring queue** - Prioritized improvements | 0 refactoring actions needed |\n| `map.toon.yaml` | **YAML** | **🗺️ Structural map + project header** - Modules, imports, exports, signatures, stats, alerts, hotspots, trend | Project architecture overview |\n\n### 🤖 LLM-Ready Documentation\n\n| File | Format | Purpose | Use Case |\n|------|--------|---------|----------|\n| `prompt.txt` | **Text** | **📝 Ready-to-send prompt** - Lists all files with instructions | Attach to LLM conversation as context guide |\n| `context.md` | **Markdown** | **📖 LLM narrative** - Architecture summary | Paste into ChatGPT/Claude for code analysis |\n\n### 📊 Visualizations\n\n| File | Format | Purpose | Description |\n|------|--------|---------|-------------|\n| `flow.mmd` | **Mermaid** | **🔄 Control flow diagram** | Function call paths with complexity styling |\n| `calls.mmd` | **Mermaid** | **📞 Call graph** | Function dependencies (edges only) |\n| `compact_flow.mmd` | **Mermaid** | **📦 Module overview** | Aggregated module-level view |\n\n## 🚀 Quick Start Commands\n\n### Basic Analysis\n```bash\n# Quick health check (TOON format only)\ncode2llm ./ -f toon\n\n# Generate all formats (what created these files)\ncode2llm ./ -f all\n\n# LLM-ready context only\ncode2llm ./ -f context\n```\n\n### Performance Options\n```bash\n# Fast analysis for large projects\ncode2llm ./ -f toon --strategy quick\n\n# Memory-limited analysis\ncode2llm ./ -f all --max-memory 500\n\n# Skip PNG generation (faster)\ncode2llm ./ -f all --no-png\n```\n\n### Refactoring Focus\n```bash\n# Get refactoring recommendations\ncode2llm ./ -f evolution\n\n# Focus on specific code smells\ncode2llm ./ -f toon --refactor --smell god_function\n\n# Data flow analysis\ncode2llm ./ -f flow --data-flow\n```\n\n## 📖 Understanding Each File\n\n### `analysis.toon` - Health Diagnostics\n**Purpose**: Quick overview of code health issues\n**Key sections**:\n- **HEALTH**: Critical issues (🔴) and warnings (🟡)\n- **REFACTOR**: Prioritized refactoring actions\n- **COUPLING**: Module dependencies and potential cycles\n- **LAYERS**: Package complexity metrics\n- **FUNCTIONS**: High-complexity functions (CC ≥ 10)\n- **CLASSES**: Complex classes needing attention\n\n**Example usage**:\n```bash\n# View health issues\ncat analysis.toon | head -30\n\n# Check refactoring priorities\ngrep \"REFACTOR\" analysis.toon\n```\n\n### `evolution.toon.yaml` - Refactoring Queue\n**Purpose**: Step-by-step refactoring plan\n**Key sections**:\n- **NEXT**: Immediate actions to take\n- **RISKS**: Potential breaking changes\n- **METRICS-TARGET**: Success criteria\n\n**Example usage**:\n```bash\n# Get refactoring plan\ncat evolution.toon.yaml\n\n# Track progress\ngrep \"NEXT\" evolution.toon.yaml\n```\n\n### `flow.toon` - Legacy Data Flow Analysis\n**Purpose**: Understand data movement through the system (legacy / explicit opt-in)\n**Key sections**:\n- **PIPELINES**: Data processing chains\n- **CONTRACTS**: Function input/output contracts\n- **SIDE_EFFECTS**: Functions with external impacts\n\n**Example usage**:\n```bash\n# Find data pipelines\ngrep \"PIPELINES\" flow.toon\n\n# Identify side effects\ngrep \"SIDE_EFFECTS\" flow.toon\n```\n\n### `map.toon.yaml` - Structural Map + Project Header\n**Purpose**: High-level architecture overview plus compact project header\n**Key sections**:\n- **MODULES**: All modules with basic stats\n- **IMPORTS**: Dependency relationships\n- **EXPORTS**: Public API surface and signatures\n- **HEADER**: Stats, alerts, hotspots, evolution trend\n\n**Example usage**:\n```bash\n# See project structure\ncat map.toon.yaml | head -50\n\n# Find public APIs\ngrep \"SIGNATURES\" map.toon.yaml\n```\n\n### `project.toon.yaml` - Compact Analysis View\n**Purpose**: Compact module view generated from project.yaml data\n**Status**: Legacy view generated on demand from unified project.yaml\n\n**Example usage**:\n```bash\n# View compact project structure\ncat project.toon.yaml | head -30\n\n# Find largest files\ngrep -E \"^  .*[0-9]{3,}$\" project.toon.yaml | sort -t',' -k2 -n -r | head -10\n```\n\n### `prompt.txt` - Ready-to-Send LLM Prompt\n**Purpose**: Pre-formatted prompt listing all generated files for LLM conversation\n**Generation**: Written when `code2llm` runs with a source path and requests `-f all` (including `--no-chunk`) or `code2logic`\n**Contents**:\n- **Files section**: Lists all existing generated files with descriptions, including `project.toon.yaml` when generated by `-f all`\n- **Source files section**: Highlights important source files such as `cli_exports/orchestrator.py`\n- **Missing section**: Shows which files weren't generated (if any)\n- **Task section**: Refactoring brief with concrete execution instructions, not just analysis\n- **Priority Order section**: State-dependent refactoring priorities, starting with blockers and then architecture cleanup\n- **Requirements section**: Guidelines for suggested changes\n\n**Example usage**:\n```bash\n# View the prompt\ncat prompt.txt\n\n# Copy to clipboard and paste into ChatGPT/Claude\ncat prompt.txt | pbcopy  # macOS\ncat prompt.txt | xclip -sel clip  # Linux\n```\n\n### `context.md` - LLM Narrative\n**Purpose**: Ready-to-paste context for AI assistants\n**Key sections**:\n- **Overview**: Project statistics\n- **Architecture**: Module breakdown\n- **Entry Points**: Public interfaces\n- **Patterns**: Design patterns detected\n\n**Example usage**:\n```bash\n# Copy to clipboard for LLM\ncat context.md | pbcopy  # macOS\ncat context.md | xclip -sel clip  # Linux\n\n# Use with Claude/ChatGPT for code analysis\n```\n\n### Visualization Files (`*.mmd`, `*.png`)\n**Purpose**: Visual understanding of code structure\n**Files**:\n- `flow.mmd` - Detailed control flow with complexity colors\n- `calls.mmd` - Simple call graph\n- `compact_flow.mmd` - High-level module view\n- `*.png` - Pre-rendered images\n\n**Example usage**:\n```bash\n# View diagrams\nopen flow.png  # macOS\nxdg-open flow.png  # Linux\n\n# Edit in Mermaid Live Editor\n# Copy content of .mmd files to https://mermaid.live\n```\n\n## 🔍 Common Analysis Patterns\n\n### 1. Code Health Assessment\n```bash\n# Quick health check\ncode2llm ./ -f toon\ncat analysis.toon | grep -E \"(HEALTH|REFACTOR)\"\n```\n\n### 2. Refactoring Planning\n```bash\n# Get refactoring queue\ncode2llm ./ -f evolution\ncat evolution.toon.yaml\n\n# Focus on specific issues\ncode2llm ./ -f toon --refactor --smell god_function\n```\n\n### 3. LLM Assistance\n```bash\n# Generate context for AI\ncode2llm ./ -f context\ncat context.md\n\n# Use with Claude: \"Based on this context, help me refactor the god modules\"\n```\n\n### 4. Team Documentation\n```bash\n# Generate all docs for team\ncode2llm ./ -f all -o ./docs/\n\n# Create visual diagrams\nopen docs/flow.png\n```\n\n## 📊 Interpreting Metrics\n\n### Complexity Metrics (CC)\n- **🔴 Critical (≥5.0)**: Immediate refactoring needed\n- **🟠 High (3.0-4.9)**: Consider refactoring\n- **🟡 Medium (1.5-2.9)**: Monitor complexity\n- **🟢 Low (0.1-1.4)**: Acceptable\n- **⚪ Basic (0.0)**: Simple functions\n\n### Module Health\n- **GOD Module**: Too large (>500 lines, >20 methods)\n- **HUB**: High fan-out (calls many modules)\n- **FAN-IN**: High incoming dependencies\n- **CYCLES**: Circular dependencies\n\n### Data Flow Indicators\n- **PIPELINE**: Sequential data processing\n- **CONTRACT**: Clear input/output specification\n- **SIDE_EFFECT**: External state modification\n\n## 🛠️ Integration Examples\n\n### CI/CD Pipeline\n```bash\n#!/bin/bash\n# Analyze code quality in CI\ncode2llm ./ -f toon -o ./analysis\nif grep -q \"🔴 GOD\" ./analysis/analysis.toon; then\n    echo \"❌ God modules detected\"\n    exit 1\nfi\n```\n\n### Pre-commit Hook\n```bash\n#!/bin/sh\n# .git/hooks/pre-commit\ncode2llm ./ -f toon -o ./temp_analysis\nif grep -q \"🔴\" ./temp_analysis/analysis.toon; then\n    echo \"⚠️  Critical issues found. Review before committing.\"\nfi\nrm -rf ./temp_analysis\n```\n\n### Documentation Generation\n```bash\n# Generate docs for README\ncode2llm ./ -f context -o ./docs/\necho \"## Architecture\" >> README.md\ncat docs/context.md >> README.md\n```\n\n## 📚 Next Steps\n\n1. **Review `analysis.toon`** - Identify critical issues\n2. **Check `evolution.toon.yaml`** - Plan refactoring priorities\n3. **Use `context.md`** - Get LLM assistance for complex changes\n4. **Reference visualizations** - Understand system architecture\n5. **Track progress** - Re-run analysis after changes\n\n## 🔧 Advanced Usage\n\n### Custom Analysis\n```bash\n# Deep analysis with all insights\ncode2llm ./ -m hybrid -f all --max-depth 15 -v\n\n# Performance-optimized\ncode2llm ./ -m static -f toon --strategy quick\n\n# Refactoring-focused\ncode2llm ./ -f toon,evolution --refactor\n```\n\n### Output Customization\n```bash\n# Separate output directories\ncode2llm ./ -f all -o ./analysis-$(date +%Y%m%d)\n\n# Split YAML into multiple files\ncode2llm ./ -f yaml --split-output\n\n# Separate orphaned functions\ncode2llm ./ -f yaml --separate-orphans\n```\n\n---\n\n**Generated by**: `code2llm ./ -f all --readme`  \n**Analysis Date**: 2026-04-13  \n**Total Functions**: 56  \n**Total Classes**: 16  \n**Modules**: 17  \n\nFor more information about code2llm, visit: https://github.com/tom-sapletta/code2llm\n", "is_subdir": false}, {"name": "context.md", "rel_path": "context.md", "path": "context.md", "size": "18.1KB", "icon": "📝", "type": "markdown", "type_name": "Markdown", "content": "# System Architecture Analysis\n\n## Overview\n\n- **Project**: /home/tom/github/semcod/docval\n- **Primary Language**: python\n- **Languages**: python: 16, shell: 1\n- **Analysis Mode**: static\n- **Total Functions**: 56\n- **Total Classes**: 16\n- **Modules**: 17\n- **Entry Points**: 44\n\n## Architecture by Module\n\n### src.docval.validators.heuristic\n- **Functions**: 10\n- **Classes**: 1\n- **File**: `heuristic.py`\n\n### src.docval.context\n- **Functions**: 9\n- **File**: `context.py`\n\n### src.docval.validators.llm_validator\n- **Functions**: 6\n- **Classes**: 1\n- **File**: `llm_validator.py`\n\n### src.docval.validators.crossref\n- **Functions**: 6\n- **Classes**: 1\n- **File**: `crossref.py`\n\n### src.docval.reporters.console\n- **Functions**: 6\n- **Classes**: 1\n- **File**: `console.py`\n\n### src.docval.cli\n- **Functions**: 5\n- **File**: `cli.py`\n\n### src.docval.actions.executor\n- **Functions**: 5\n- **Classes**: 2\n- **File**: `executor.py`\n\n### src.docval.chunker\n- **Functions**: 3\n- **File**: `chunker.py`\n\n### src.docval.models\n- **Functions**: 3\n- **Classes**: 8\n- **File**: `models.py`\n\n### src.docval.pipeline\n- **Functions**: 1\n- **File**: `pipeline.py`\n\n### src.docval.reporters.json_report\n- **Functions**: 1\n- **Classes**: 1\n- **File**: `json_report.py`\n\n### src.docval.reporters.markdown_report\n- **Functions**: 1\n- **Classes**: 1\n- **File**: `markdown_report.py`\n\n## Key Entry Points\n\nMain execution flows into the system:\n\n### src.docval.cli.fix\n> Validate and apply fixes to documentation.\n\nBy default runs in dry-run mode. Use --no-dry-run to apply changes.\n\nExamples:\n\n    docval fix docs/      \n- **Calls**: main.command, click.argument, click.option, click.option, click.option, click.option, click.option, click.option\n\n### src.docval.reporters.markdown_report.MarkdownReporter.report\n> Write validation report to a Markdown file.\n- **Calls**: result.update_counts, lines.append, lines.append, lines.append, lines.append, lines.append, lines.append, lines.append\n\n### src.docval.pipeline.scan\n> Run the full validation pipeline.\n\nArgs:\n    docs_dir: Path to the documentation directory\n    project_root: Path to the project root (for code cross-\n- **Calls**: docs_dir.resolve, project_root.resolve, src.docval.context.build_context, src.docval.chunker.chunk_directory, sum, HeuristicValidator, heuristic.validate, CrossRefValidator\n\n### src.docval.cli.stats\n> Show documentation statistics (no validation).\n\nExamples:\n\n    docval stats docs/\n- **Calls**: main.command, click.argument, click.option, src.docval.chunker.chunk_directory, len, sum, sum, sum\n\n### src.docval.cli.scan\n> Scan documentation and report issues.\n\nDOCS_DIR is the path to the documentation directory to validate.\n\nExamples:\n\n    docval scan docs/\n\n    docval \n- **Calls**: main.command, click.argument, click.option, click.option, click.option, click.option, click.option, click.option\n\n### src.docval.cli.patch\n> Generate a patch file with recommended changes.\n\nExamples:\n\n    docval patch docs/ -o fixes.txt\n\n    docval patch docs/ --llm -o fixes.txt\n- **Calls**: main.command, click.argument, click.option, click.option, click.option, click.option, click.option, run_scan\n\n### src.docval.validators.crossref.CrossRefValidator._build_symbol_set\n> Build a set of all known code symbols (lowercase for matching).\n- **Calls**: set, symbols.add, symbols.add, symbols.add, mod.split, symbols.add, symbols.add, symbols.add\n\n### src.docval.validators.llm_validator.LLMValidator._build_context_summary\n> Build a compact project context string for the prompt.\n- **Calls**: None.join, parts.append, parts.append, parts.append, parts.append, parts.append, parts.append, parts.append\n\n### src.docval.actions.executor.ActionExecutor.generate_patch\n> Generate a unified diff patch for all pending actions.\n- **Calls**: None.join, lines.append, lines.append, lines.append, lines.append, lines.append, lines.append, lines.append\n\n### src.docval.validators.crossref.CrossRefValidator._check_import_paths\n> Check Python import statements in code blocks.\n- **Calls**: re.compile, re.compile, code_block_re.finditer, block_match.group, import_re.finditer, any, imp_match.group, imp_match.group\n\n### src.docval.validators.llm_validator.LLMValidator._validate_chunk\n> Validate a single chunk via LLM. Returns True if successful.\n- **Calls**: self._build_prompt, completion_fn, self._parse_response, _STATUS_MAP.get, _ACTION_MAP.get, float, parsed.get, parsed.get\n\n### src.docval.reporters.console.ConsoleReporter._print_issues_table\n- **Calls**: Table, table.add_column, table.add_column, table.add_column, table.add_column, table.add_column, self.console.print, _STATUS_COLORS.get\n\n### src.docval.validators.heuristic.HeuristicValidator._check_stale_versions\n> Detect references to old version numbers if project version is known.\n- **Calls**: re.match, int, re.compile, old_ver_re.findall, current_major.group, chunk.add_issue, None.join, None.join\n\n### src.docval.validators.crossref.CrossRefValidator._check_code_references\n> Check inline code references like `ClassName` or `function_name`.\n- **Calls**: re.findall, ref.lower, ref_lower.split, any, orphaned_refs.append, chunk.add_issue, len, len\n\n### src.docval.actions.executor.ActionExecutor.execute\n> Apply all pending actions. Returns summary.\n- **Calls**: ActionResult, files_with_deletions.items, all, files_to_archive.append, self._delete_sections, self._archive_file, None.append, result.errors.append\n\n### src.docval.validators.heuristic.HeuristicValidator.validate\n> Run all heuristic checks across all files.\n- **Calls**: self._seen_chunks.clear, self._check_empty, self._check_outdated_markers, self._check_broken_internal_links, self._check_todo_fixme, self._check_archive_path, self._check_stale_versions, self._check_duplicates\n\n### src.docval.validators.heuristic.HeuristicValidator._check_duplicates\n> Detect near-duplicate content across chunks using SequenceMatcher.\n- **Calls**: re.sub, self._seen_chunks.append, None.strip, None.quick_ratio, None.ratio, chunk.content.lower, SequenceMatcher, chunk.add_issue\n\n### src.docval.models.ValidationResult.update_counts\n- **Calls**: len, sum, self._count, self._count, self._count, self._count, self._count, self._count\n\n### src.docval.validators.llm_validator.LLMValidator._parse_response\n> Parse JSON from LLM response, handling markdown fences.\n- **Calls**: re.sub, re.sub, re.search, text.strip, text.strip, json.loads, json.loads, match.group\n\n### src.docval.reporters.console.ConsoleReporter._report_plain\n> Fallback plain text report when rich is not available.\n- **Calls**: print, print, print, print, print, print, print, print\n\n### src.docval.actions.executor.ActionExecutor._delete_sections\n> Remove line ranges from a file.\n- **Calls**: None.splitlines, sorted, filepath.write_text, max, min, None.join, filepath.read_text, len\n\n### src.docval.validators.crossref.CrossRefValidator._check_cli_commands\n> Check CLI command references in code blocks.\n- **Calls**: re.compile, cli_re.finditer, block_match.group, block.splitlines, line.strip, line.split, line.startswith\n\n### src.docval.validators.heuristic.HeuristicValidator._check_broken_internal_links\n> Check for internal Markdown links pointing to non-existent files.\n- **Calls**: re.compile, link_re.finditer, match.group, target.startswith, target.split, resolved.exists, chunk.add_issue\n\n### src.docval.validators.heuristic.HeuristicValidator._check_minimal_content\n> Flag heading-only sections with no meaningful body.\n- **Calls**: None.splitlines, chunk.add_issue, chunk.content.strip, len, len, l.strip, re.match\n\n### src.docval.reporters.json_report.JSONReporter.report\n> Write validation report as JSON.\n- **Calls**: result.update_counts, output.write_text, None.append, json.dumps, None.append, round, round\n\n### src.docval.validators.heuristic.HeuristicValidator._check_empty\n> Flag chunks with no meaningful content.\n- **Calls**: None.strip, None.strip, len, chunk.add_issue, re.sub, re.sub\n\n### src.docval.validators.heuristic.HeuristicValidator._check_archive_path\n> Files in archive/ directories are likely outdated.\n- **Calls**: str, None.startswith, rel.lower, chunk.add_issue, rel.lower\n\n### src.docval.reporters.console.ConsoleReporter.report\n> Print full validation report.\n- **Calls**: result.update_counts, self._print_summary, self._print_issues_table, self._report_plain, self._print_details\n\n### src.docval.actions.executor.ActionExecutor._archive_file\n> Move a file to the archive directory, preserving relative path.\n- **Calls**: filepath.relative_to, dest.parent.mkdir, shutil.move, str, str\n\n### src.docval.validators.llm_validator.LLMValidator.validate\n> Validate chunks via LLM. Returns number of chunks validated.\n\nArgs:\n    doc_files: Files to validate\n    only_uncertain: If True, skip chunks already \n- **Calls**: self._build_context_summary, ImportError, self._validate_chunk, time.sleep\n\n## Process Flows\n\nKey execution flows identified:\n\n### Flow 1: fix\n```\nfix [src.docval.cli]\n```\n\n### Flow 2: report\n```\nreport [src.docval.reporters.markdown_report.MarkdownReporter]\n```\n\n### Flow 3: scan\n```\nscan [src.docval.pipeline]\n  └─ →> build_context\n      └─> _collect_src_files\n      └─> _extract_python_symbols\n  └─ →> chunk_directory\n      └─> discover_md_files\n      └─> chunk_file\n```\n\n### Flow 4: stats\n```\nstats [src.docval.cli]\n  └─ →> chunk_directory\n      └─> discover_md_files\n      └─> chunk_file\n```\n\n### Flow 5: patch\n```\npatch [src.docval.cli]\n```\n\n### Flow 6: _build_symbol_set\n```\n_build_symbol_set [src.docval.validators.crossref.CrossRefValidator]\n```\n\n### Flow 7: _build_context_summary\n```\n_build_context_summary [src.docval.validators.llm_validator.LLMValidator]\n```\n\n### Flow 8: generate_patch\n```\ngenerate_patch [src.docval.actions.executor.ActionExecutor]\n```\n\n### Flow 9: _check_import_paths\n```\n_check_import_paths [src.docval.validators.crossref.CrossRefValidator]\n```\n\n### Flow 10: _validate_chunk\n```\n_validate_chunk [src.docval.validators.llm_validator.LLMValidator]\n```\n\n## Key Classes\n\n### src.docval.validators.heuristic.HeuristicValidator\n> Apply fast heuristic rules to doc chunks before LLM validation.\n- **Methods**: 10\n- **Key Methods**: src.docval.validators.heuristic.HeuristicValidator.__init__, src.docval.validators.heuristic.HeuristicValidator.validate, src.docval.validators.heuristic.HeuristicValidator._check_empty, src.docval.validators.heuristic.HeuristicValidator._check_outdated_markers, src.docval.validators.heuristic.HeuristicValidator._check_broken_internal_links, src.docval.validators.heuristic.HeuristicValidator._check_todo_fixme, src.docval.validators.heuristic.HeuristicValidator._check_archive_path, src.docval.validators.heuristic.HeuristicValidator._check_stale_versions, src.docval.validators.heuristic.HeuristicValidator._check_duplicates, src.docval.validators.heuristic.HeuristicValidator._check_minimal_content\n\n### src.docval.validators.llm_validator.LLMValidator\n> Validate documentation chunks using an LLM via litellm.\n- **Methods**: 6\n- **Key Methods**: src.docval.validators.llm_validator.LLMValidator.__init__, src.docval.validators.llm_validator.LLMValidator.validate, src.docval.validators.llm_validator.LLMValidator._validate_chunk, src.docval.validators.llm_validator.LLMValidator._build_prompt, src.docval.validators.llm_validator.LLMValidator._build_context_summary, src.docval.validators.llm_validator.LLMValidator._parse_response\n\n### src.docval.validators.crossref.CrossRefValidator\n> Validate documentation references against actual project code.\n- **Methods**: 6\n- **Key Methods**: src.docval.validators.crossref.CrossRefValidator.__init__, src.docval.validators.crossref.CrossRefValidator._build_symbol_set, src.docval.validators.crossref.CrossRefValidator.validate, src.docval.validators.crossref.CrossRefValidator._check_code_references, src.docval.validators.crossref.CrossRefValidator._check_import_paths, src.docval.validators.crossref.CrossRefValidator._check_cli_commands\n\n### src.docval.reporters.console.ConsoleReporter\n> Print validation results to the console using rich.\n- **Methods**: 6\n- **Key Methods**: src.docval.reporters.console.ConsoleReporter.__init__, src.docval.reporters.console.ConsoleReporter.report, src.docval.reporters.console.ConsoleReporter._print_summary, src.docval.reporters.console.ConsoleReporter._print_issues_table, src.docval.reporters.console.ConsoleReporter._print_details, src.docval.reporters.console.ConsoleReporter._report_plain\n\n### src.docval.actions.executor.ActionExecutor\n> Execute remediation actions on doc files.\n- **Methods**: 5\n- **Key Methods**: src.docval.actions.executor.ActionExecutor.__init__, src.docval.actions.executor.ActionExecutor.execute, src.docval.actions.executor.ActionExecutor._delete_sections, src.docval.actions.executor.ActionExecutor._archive_file, src.docval.actions.executor.ActionExecutor.generate_patch\n\n### src.docval.models.DocChunk\n> A semantic chunk extracted from a Markdown file.\n- **Methods**: 4\n- **Key Methods**: src.docval.models.DocChunk.char_count, src.docval.models.DocChunk.word_count, src.docval.models.DocChunk.relative_path, src.docval.models.DocChunk.add_issue\n\n### src.docval.models.DocFile\n> Represents a single Markdown file with its chunks.\n- **Methods**: 2\n- **Key Methods**: src.docval.models.DocFile.status_summary, src.docval.models.DocFile.worst_status\n\n### src.docval.models.ValidationResult\n> Aggregated result of a validation run.\n- **Methods**: 2\n- **Key Methods**: src.docval.models.ValidationResult.update_counts, src.docval.models.ValidationResult._count\n\n### src.docval.reporters.json_report.JSONReporter\n> Generate a JSON report of validation results.\n- **Methods**: 1\n- **Key Methods**: src.docval.reporters.json_report.JSONReporter.report\n\n### src.docval.reporters.markdown_report.MarkdownReporter\n> Generate a Markdown report of validation results.\n- **Methods**: 1\n- **Key Methods**: src.docval.reporters.markdown_report.MarkdownReporter.report\n\n### src.docval.actions.executor.ActionResult\n> Summary of executed actions.\n- **Methods**: 0\n\n### src.docval.models.ChunkStatus\n- **Methods**: 0\n- **Inherits**: str, enum.Enum\n\n### src.docval.models.ActionType\n- **Methods**: 0\n- **Inherits**: str, enum.Enum\n\n### src.docval.models.Severity\n- **Methods**: 0\n- **Inherits**: str, enum.Enum\n\n### src.docval.models.Issue\n> A single validation issue found in a doc chunk.\n- **Methods**: 0\n\n### src.docval.models.ProjectContext\n> Gathered context about the project for cross-referencing.\n- **Methods**: 0\n\n## Data Transformation Functions\n\nKey functions that process and transform data:\n\n### src.docval.context._parse_toon_files\n> Parse .toon.yaml files for code analysis data.\n- **Output to**: list, list, root.rglob, root.rglob, tf.read_text\n\n### src.docval.validators.llm_validator.LLMValidator.validate\n> Validate chunks via LLM. Returns number of chunks validated.\n\nArgs:\n    doc_files: Files to validate\n- **Output to**: self._build_context_summary, ImportError, self._validate_chunk, time.sleep\n\n### src.docval.validators.llm_validator.LLMValidator._validate_chunk\n> Validate a single chunk via LLM. Returns True if successful.\n- **Output to**: self._build_prompt, completion_fn, self._parse_response, _STATUS_MAP.get, _ACTION_MAP.get\n\n### src.docval.validators.llm_validator.LLMValidator._parse_response\n> Parse JSON from LLM response, handling markdown fences.\n- **Output to**: re.sub, re.sub, re.search, text.strip, text.strip\n\n### src.docval.validators.crossref.CrossRefValidator.validate\n> Check each chunk for references to code symbols.\n- **Output to**: self._check_code_references, self._check_import_paths, self._check_cli_commands\n\n### src.docval.validators.heuristic.HeuristicValidator.validate\n> Run all heuristic checks across all files.\n- **Output to**: self._seen_chunks.clear, self._check_empty, self._check_outdated_markers, self._check_broken_internal_links, self._check_todo_fixme\n\n## Behavioral Patterns\n\n### recursion__decorator_name\n- **Type**: recursion\n- **Confidence**: 0.90\n- **Functions**: src.docval.context._decorator_name\n\n## Public API Surface\n\nFunctions exposed as public API (no underscore prefix):\n\n- `src.docval.cli.fix` - 39 calls\n- `src.docval.chunker.chunk_file` - 31 calls\n- `src.docval.reporters.markdown_report.MarkdownReporter.report` - 29 calls\n- `src.docval.pipeline.scan` - 26 calls\n- `src.docval.cli.stats` - 25 calls\n- `src.docval.cli.scan` - 21 calls\n- `src.docval.cli.patch` - 19 calls\n- `src.docval.actions.executor.ActionExecutor.generate_patch` - 17 calls\n- `src.docval.actions.executor.ActionExecutor.execute` - 10 calls\n- `src.docval.validators.heuristic.HeuristicValidator.validate` - 9 calls\n- `src.docval.models.ValidationResult.update_counts` - 9 calls\n- `src.docval.context.build_context` - 8 calls\n- `src.docval.chunker.discover_md_files` - 7 calls\n- `src.docval.reporters.json_report.JSONReporter.report` - 7 calls\n- `src.docval.reporters.console.ConsoleReporter.report` - 5 calls\n- `src.docval.validators.llm_validator.LLMValidator.validate` - 4 calls\n- `src.docval.validators.crossref.CrossRefValidator.validate` - 3 calls\n- `src.docval.chunker.chunk_directory` - 2 calls\n- `src.docval.cli.main` - 2 calls\n- `src.docval.models.DocChunk.add_issue` - 2 calls\n\n## System Interactions\n\nHow components interact:\n\n```mermaid\ngraph TD\n    fix --> command\n    fix --> argument\n    fix --> option\n    report --> update_counts\n    report --> append\n    scan --> resolve\n    scan --> build_context\n    scan --> chunk_directory\n    scan --> sum\n    stats --> command\n    stats --> argument\n    stats --> option\n    stats --> chunk_directory\n    stats --> len\n    scan --> command\n    scan --> argument\n    scan --> option\n    patch --> command\n    patch --> argument\n    patch --> option\n    _build_symbol_set --> set\n    _build_symbol_set --> add\n    _build_symbol_set --> split\n    _build_context_summa --> join\n    _build_context_summa --> append\n    generate_patch --> join\n    generate_patch --> append\n    _check_import_paths --> compile\n    _check_import_paths --> finditer\n    _check_import_paths --> group\n```\n\n## Reverse Engineering Guidelines\n\n1. **Entry Points**: Start analysis from the entry points listed above\n2. **Core Logic**: Focus on classes with many methods\n3. **Data Flow**: Follow data transformation functions\n4. **Process Flows**: Use the flow diagrams for execution paths\n5. **API Surface**: Public API functions reveal the interface\n\n## Context for LLM\n\nMaintain the identified architectural patterns and public API surface when suggesting changes.", "is_subdir": false}, {"name": "calls.mmd", "rel_path": "calls.mmd", "path": "calls.mmd", "size": "1.8KB", "icon": "📈", "type": "mermaid", "type_name": "Mermaid", "content": "flowchart LR\n    subgraph src__docval\n        src__docval__chunker__chunk_directory[&quot;chunk_directory&quot;]\n        src__docval__chunker__discover_md_files[&quot;discover_md_files&quot;]\n        src__docval__context___extract_dependencies[&quot;_extract_dependencies&quot;]\n        src__docval__pipeline__scan[&quot;scan&quot;]\n        src__docval__context___extract_python_symbols[&quot;_extract_python_symbols&quot;]\n        src__docval__context___extract_version[&quot;_extract_version&quot;]\n        src__docval__context__build_context[&quot;build_context&quot;]\n        src__docval__cli__stats[&quot;stats&quot;]\n        src__docval__context___collect_git_info[&quot;_collect_git_info&quot;]\n        src__docval__context___build_dir_tree[&quot;_build_dir_tree&quot;]\n        src__docval__context___collect_src_files[&quot;_collect_src_files&quot;]\n        src__docval__context___parse_toon_files[&quot;_parse_toon_files&quot;]\n        src__docval__chunker__chunk_file[&quot;chunk_file&quot;]\n    end\n    src__docval__chunker__chunk_directory --&gt; src__docval__chunker__discover_md_files\n    src__docval__chunker__chunk_directory --&gt; src__docval__chunker__chunk_file\n    src__docval__pipeline__scan --&gt; src__docval__context__build_context\n    src__docval__pipeline__scan --&gt; src__docval__chunker__chunk_directory\n    src__docval__cli__stats --&gt; src__docval__chunker__chunk_directory\n    src__docval__context__build_context --&gt; src__docval__context___collect_src_files\n    src__docval__context__build_context --&gt; src__docval__context___extract_python_symbols\n    src__docval__context__build_context --&gt; src__docval__context___extract_version\n    src__docval__context__build_context --&gt; src__docval__context___extract_dependencies\n    src__docval__context__build_context --&gt; src__docval__context___parse_toon_files\n    src__docval__context__build_context --&gt; src__docval__context___collect_git_info\n    src__docval__context__build_context --&gt; src__docval__context___build_dir_tree\n", "is_subdir": false}, {"name": "compact_flow.mmd", "rel_path": "compact_flow.mmd", "path": "compact_flow.mmd", "size": "56B", "icon": "📈", "type": "mermaid", "type_name": "Mermaid", "content": "flowchart TD\n    src__docval[&quot;src.docval&lt;br/&gt;56 funcs&quot;]\n", "is_subdir": false}, {"name": "flow.mmd", "rel_path": "flow.mmd", "path": "flow.mmd", "size": "1.6KB", "icon": "📈", "type": "mermaid", "type_name": "Mermaid", "content": "flowchart TD\n\n    %% Entry points (blue)\n    classDef entry fill:#4dabf7,stroke:#1971c2,color:#fff\n\n    subgraph Core\n        src__docval__pipeline__scan[&quot;scan&quot;]\n        src__docval__cli__main[&quot;main&quot;]\n        src__docval__cli__scan[&quot;scan&quot;]\n        src__docval__cli__fix[&quot;fix&quot;]\n        src__docval__cli__patch[&quot;patch&quot;]\n        src__docval__cli__stats[&quot;stats&quot;]\n        src__docval__context__build_context[&quot;build_context&quot;]\n        src__docval__context___extract_python_symbols{{_extract_python_symbols CC=18}}\n        src__docval__context___decorator_name[&quot;_decorator_name&quot;]\n        src__docval__validators__llm_validator__LLMValidator__validate[&quot;validate&quot;]\n        src__docval__validators__llm_validator__LLMValidator___validate_chunk[&quot;_validate_chunk&quot;]\n        src__docval__validators__llm_validator__LLMValidator___build_prompt[&quot;_build_prompt&quot;]\n        src__docval__validators__llm_validator__LLMValidator___build_context_summary[&quot;_build_context_summary&quot;]\n        src__docval__validators__llm_validator__LLMValidator___parse_response[&quot;_parse_response&quot;]\n        src__docval__validators__crossref__CrossRefValidator___build_symbol_set[&quot;_build_symbol_set&quot;]\n        ...[&quot;+27 more&quot;]\n    end\n\n    class src__docval__pipeline__scan,src__docval__cli__main,src__docval__cli__scan,src__docval__cli__fix,src__docval__cli__patch,src__docval__cli__stats,src__docval__validators__llm_validator__LLMValidator__validate,src__docval__validators__llm_validator__LLMValidator___validate_chunk,src__docval__validators__llm_validator__LLMValidator___build_prompt,src__docval__validators__llm_validator__LLMValidator___build_context_summary entry\n", "is_subdir": false}, {"name": "prompt.txt", "rel_path": "prompt.txt", "path": "prompt.txt", "size": "2.9KB", "icon": "📄", "type": "text", "type_name": "Text", "content": "You are an AI assistant helping me understand and improve a codebase.\nUse the attached/generated files as the authoritative context.\nYour goal is to refactor the project based on these files, not just summarize it.\n\nwe are in project path: .\n\nFiles for analysis:\n\nNote: project/validation.toon.yaml and project/duplication.toon.yaml are generated by external tools (vallm and redup)\n- project/analysis.toon.yaml  (Health diagnostics - complexity metrics, god modules, coupling issues, refactoring priorities) [1KB]\n- project/map.toon.yaml  (Structural map - files, sizes, imports, exports, signatures, project header) [4KB]\n- project/evolution.toon.yaml  (Refactoring queue - ranked actions by impact/effort, risks, metrics targets, history) [1KB]\n- project/project.toon.yaml  (Compact project overview - generated from project.yaml data) [2KB]\n- project/context.md  (LLM narrative - architecture summary and project context) [18KB]\n- project/README.md  (Generated documentation - overview and usage guide) [9KB]\n\nTask:\n- Treat this prompt as a refactoring brief: identify the highest-priority changes and prepare concrete edits.\n- Use the file set to decide whether the first pass should focus on correctness, duplication, complexity reduction, or architecture cleanup.\n- If you can safely implement the refactor, do it; otherwise give an exact file-by-file change plan and test plan.\n- Use analysis.toon.yaml to locate high-CC functions and god modules that should be split first.\n- Keep module boundaries intact and update imports/exports according to map.toon.yaml.\n- Use evolution.toon.yaml as the execution backlog and work from the top-ranked items.\n- Keep project.toon.yaml aligned with the refactored architecture.\n\nPriority Order:\nP1 — Split or simplify the highest-CC / god modules identified in analysis.toon.yaml.\nP1 — Preserve module boundaries and update imports/exports according to map.toon.yaml.\nP2 — Keep the compact project overview in project.toon.yaml aligned with the refactor.\nP2 — Execute the highest-impact items from evolution.toon.yaml in order of benefit/risk.\n\nFocus Areas for Analysis:\n1. **Code Health Analysis** - Review complexity metrics, god modules, coupling issues from analysis.toon.yaml\n2. **Structural Map** - Use map.toon.yaml to inspect imports, exports, signatures, and the project header\n3. **Refactoring Priorities** - Examine ranked refactoring actions and risk assessment from evolution.toon.yaml\n4. **Project Overview** - Review the compact project overview from project.toon.yaml\n\nAnalysis Strategy:\n- Start with analysis.toon.yaml for health metrics, then map.toon.yaml for structure and signatures\n- Review evolution.toon.yaml for action priorities and next steps\n- Compare the compact project overview in project.toon.yaml with the main analysis files\n\nConstraints:\n- Prefer minimal, incremental changes.\n- Maintain full backward compatibility.\n- Base recommendations on concrete metrics from the provided files.\n- If uncertain, ask clarifying questions.\n", "is_subdir": false}, {"name": "analysis.toon.yaml", "rel_path": "analysis.toon.yaml", "path": "analysis.toon.yaml", "size": "2.0KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "# code2llm | 17f 2007L | python:16,shell:1 | 2026-04-13\n# CC̄=6.3 | critical:3/56 | dups:0 | cycles:1\n\nHEALTH[3]:\n  🟡 CC    _extract_python_symbols CC=18 (limit:15)\n  🟡 CC    report CC=19 (limit:15)\n  🟡 CC    execute CC=17 (limit:15)\n\nREFACTOR[2]:\n  1. split 3 high-CC methods  (CC&gt;15)\n  2. break 1 circular dependencies\n\nPIPELINES[42]:\n  [1] Src [scan]: scan → build_context → _collect_src_files\n      PURITY: 100% pure\n  [2] Src [main]: main\n      PURITY: 100% pure\n  [3] Src [scan]: scan\n      PURITY: 100% pure\n  [4] Src [fix]: fix\n      PURITY: 100% pure\n  [5] Src [patch]: patch\n      PURITY: 100% pure\n\nLAYERS:\n  src/                            CC̄=6.3    ←in:0  →out:0\n  │ cli                        261L  0C    5m  CC=12     ←0\n  │ llm_validator              249L  1C    6m  CC=9      ←0\n  │ !! context                    242L  0C    9m  CC=18     ←1\n  │ heuristic                  205L  1C   10m  CC=9      ←0\n  │ crossref                   169L  1C    6m  CC=11     ←0\n  │ console                    165L  1C    6m  CC=10     ←0\n  │ models                     148L  8C    3m  CC=4      ←0\n  │ !! executor                   142L  2C    5m  CC=17     ←0\n  │ chunker                    111L  0C    3m  CC=12     ←2\n  │ !! markdown_report            100L  1C    1m  CC=19     ←0\n  │ pipeline                    95L  0C    1m  CC=12     ←0\n  │ json_report                 66L  1C    1m  CC=5      ←0\n  │ __init__                     6L  0C    0m  CC=0.0    ←0\n  │ __init__                     6L  0C    0m  CC=0.0    ←0\n  │ __init__                     4L  0C    0m  CC=0.0    ←0\n  │ __init__                     3L  0C    0m  CC=0.0    ←0\n  │\n  ./                              CC̄=0.0    ←in:0  →out:0\n  │ project.sh                  35L  0C    0m  CC=0.0    ←0\n  │\n\nCOUPLING: no cross-package imports detected\n\nEXTERNAL:\n  validation: run `vallm batch .` → validation.toon\n  duplication: run `redup scan .` → duplication.toon\n", "is_subdir": false}, {"name": "duplication.toon.yaml", "rel_path": "duplication.toon.yaml", "path": "duplication.toon.yaml", "size": "187B", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "# redup/duplication | 0 groups | 16f 1972L | 2026-04-13\n\nSUMMARY:\n  files_scanned: 16\n  total_lines:   1972\n  dup_groups:    0\n  dup_fragments: 0\n  saved_lines:   0\n  scan_ms:       6749\n", "is_subdir": false}, {"name": "evolution.toon.yaml", "rel_path": "evolution.toon.yaml", "path": "evolution.toon.yaml", "size": "1.7KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "# code2llm/evolution | 56 func | 12f | 2026-04-13\n\nNEXT[3] (ranked by impact):\n  [1] !  SPLIT-FUNC      _extract_python_symbols  CC=18  fan=16\n      WHY: CC=18 exceeds 15\n      EFFORT: ~1h  IMPACT: 288\n\n  [2] !  SPLIT-FUNC      ActionExecutor.execute  CC=17  fan=9\n      WHY: CC=17 exceeds 15\n      EFFORT: ~1h  IMPACT: 153\n\n  [3] !  SPLIT-FUNC      MarkdownReporter.report  CC=19  fan=7\n      WHY: CC=19 exceeds 15\n      EFFORT: ~1h  IMPACT: 133\n\n\nRISKS[0]: none\n\nMETRICS-TARGET:\n  CC̄:          6.3 → ≤4.4\n  max-CC:      19 → ≤9\n  god-modules: 0 → 0\n  high-CC(≥15): 3 → ≤1\n  hub-types:   0 → ≤0\n\nPATTERNS (language parser shared logic):\n  _extract_declarations() in base.py — unified extraction for:\n    - TypeScript: interfaces, types, classes, functions, arrow funcs\n    - PHP: namespaces, traits, classes, functions, includes\n    - Ruby: modules, classes, methods, requires\n    - C++: classes, structs, functions, #includes\n    - C#: classes, interfaces, methods, usings\n    - Java: classes, interfaces, methods, imports\n    - Go: packages, functions, structs\n    - Rust: modules, functions, traits, use statements\n\n  Shared regex patterns per language:\n    - import: language-specific import/require/using patterns\n    - class: class/struct/trait declarations with inheritance\n    - function: function/method signatures with visibility\n    - brace_tracking: for C-family languages ({ })\n    - end_keyword_tracking: for Ruby (module/class/def...end)\n\n  Benefits:\n    - Consistent extraction logic across all languages\n    - Reduced code duplication (~70% reduction in parser LOC)\n    - Easier maintenance: fix once, apply everywhere\n    - Standardized FunctionInfo/ClassInfo models\n\nHISTORY:\n  prev CC̄=6.3 → now CC̄=6.3\n", "is_subdir": false}, {"name": "map.toon.yaml", "rel_path": "map.toon.yaml", "path": "map.toon.yaml", "size": "4.5KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "# docval | 17f 2007L | shell:1,python:16 | 2026-04-13\n# stats: 56 func | 0 cls | 17 mod | CC̄=6.3 | critical:3 | cycles:0\n# alerts[5]: CC MarkdownReporter.report=19; CC _extract_python_symbols=18; CC ActionExecutor.execute=17; fan-out _extract_python_symbols=16; fan-out chunk_file=16\n# hotspots[5]: chunk_file fan=16; fix fan=16; _extract_python_symbols fan=16; scan fan=15; scan fan=13\n# evolution: CC̄ 6.3→6.3 (flat 0.0)\n# Keys: M=modules, D=details, i=imports, e=exports, c=classes, f=functions, m=methods\nM[17]:\n  project.sh,35\n  src/docval/__init__.py,3\n  src/docval/actions/__init__.py,4\n  src/docval/actions/executor.py,142\n  src/docval/chunker.py,111\n  src/docval/cli.py,261\n  src/docval/context.py,242\n  src/docval/models.py,148\n  src/docval/pipeline.py,95\n  src/docval/reporters/__init__.py,6\n  src/docval/reporters/console.py,165\n  src/docval/reporters/json_report.py,66\n  src/docval/reporters/markdown_report.py,100\n  src/docval/validators/__init__.py,6\n  src/docval/validators/crossref.py,169\n  src/docval/validators/heuristic.py,205\n  src/docval/validators/llm_validator.py,249\nD:\n  src/docval/reporters/markdown_report.py:\n    e: MarkdownReporter\n    MarkdownReporter: report(2)  # Generate a Markdown report of validation results...\n  src/docval/context.py:\n    e: build_context,_collect_src_files,_extract_python_symbols,_decorator_name,_extract_version,_extract_dependencies,_parse_toon_files,_collect_git_info,_build_dir_tree\n    build_context(project_root;max_depth)\n    _collect_src_files(ctx;root;max_depth)\n    _extract_python_symbols(ctx;root)\n    _decorator_name(dec)\n    _extract_version(ctx;root)\n    _extract_dependencies(ctx;root)\n    _parse_toon_files(ctx;root)\n    _collect_git_info(ctx;root)\n    _build_dir_tree(ctx;root;max_depth)\n  src/docval/actions/executor.py:\n    e: ActionResult,ActionExecutor\n    ActionResult:  # Summary of executed actions...\n    ActionExecutor: __init__(2),execute(2),_delete_sections(2),_archive_file(2),generate_patch(1)  # Execute remediation actions on doc files...\n  src/docval/chunker.py:\n    e: chunk_file,discover_md_files,chunk_directory\n    chunk_file(path;base_dir)\n    discover_md_files(docs_dir;exclude_patterns)\n    chunk_directory(docs_dir;exclude_patterns)\n  src/docval/pipeline.py:\n    e: scan\n    scan(docs_dir;project_root;exclude;use_llm;llm_model;verbose)\n  src/docval/cli.py:\n    e: main,scan,fix,patch,stats\n    main()\n    scan(docs_dir;project;exclude;llm;model;output;verbose)\n    fix(docs_dir;project;exclude;force;archive_dir;dry_run;llm;model;verbose)\n    patch(docs_dir;project;exclude;output;llm;model)\n    stats(docs_dir;exclude)\n  src/docval/validators/crossref.py:\n    e: CrossRefValidator\n    CrossRefValidator: __init__(1),_build_symbol_set(0),validate(1),_check_code_references(1),_check_import_paths(1),_check_cli_commands(1)  # Validate documentation references against actual project cod...\n  src/docval/reporters/console.py:\n    e: ConsoleReporter\n    ConsoleReporter: __init__(1),report(1),_print_summary(1),_print_issues_table(1),_print_details(1),_report_plain(1)  # Print validation results to the console using rich...\n  src/docval/validators/llm_validator.py:\n    e: LLMValidator\n    LLMValidator: __init__(5),validate(2),_validate_chunk(3),_build_prompt(2),_build_context_summary(0),_parse_response(1)  # Validate documentation chunks using an LLM via litellm...\n  src/docval/validators/heuristic.py:\n    e: HeuristicValidator\n    HeuristicValidator: __init__(1),validate(1),_check_empty(1),_check_outdated_markers(1),_check_broken_internal_links(2),_check_todo_fixme(1),_check_archive_path(2),_check_stale_versions(1),_check_duplicates(1),_check_minimal_content(1)  # Apply fast heuristic rules to doc chunks before LLM validati...\n  src/docval/reporters/json_report.py:\n    e: JSONReporter\n    JSONReporter: report(2)  # Generate a JSON report of validation results...\n  src/docval/models.py:\n    e: ChunkStatus,ActionType,Severity,Issue,DocChunk,DocFile,ProjectContext,ValidationResult\n    ChunkStatus(str,enum.Enum):\n    ActionType(str,enum.Enum):\n    Severity(str,enum.Enum):\n    Issue:  # A single validation issue found in a doc chunk...\n    DocChunk: add_issue(4)  # A semantic chunk extracted from a Markdown file...\n    DocFile:  # Represents a single Markdown file with its chunks...\n    ProjectContext:  # Gathered context about the project for cross-referencing...\n    ValidationResult: update_counts(0),_count(1)  # Aggregated result of a validation run...\n  project.sh:\n  src/docval/__init__.py:\n  src/docval/actions/__init__.py:\n  src/docval/validators/__init__.py:\n  src/docval/reporters/__init__.py:\n", "is_subdir": false}, {"name": "project.toon.yaml", "rel_path": "project.toon.yaml", "path": "project.toon.yaml", "size": "2.6KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "# docval | 56 func | 12f | 2502L | python | 2026-04-13\n\nHEALTH:\n  CC̄=6.3  critical=13 (limit:10)  dup=0  cycles=1\n\nALERTS[15]:\n  !!  high_fan_out     chunk_file = 16 (limit:10)\n  !!  high_fan_out     fix = 16 (limit:10)\n  !!  high_fan_out     _extract_python_symbols = 16 (limit:10)\n  !!  high_fan_out     scan = 15 (limit:10)\n  !   cc_exceeded      MarkdownReporter.report = 19 (limit:15)\n  !   cc_exceeded      _extract_python_symbols = 18 (limit:15)\n  !   cc_exceeded      ActionExecutor.execute = 17 (limit:15)\n  !   high_fan_out     scan = 13 (limit:10)\n  !   high_fan_out     _extract_dependencies = 13 (limit:10)\n  !   high_fan_out     _parse_toon_files = 13 (limit:10)\n\nMODULES[17] (top by size):\n  M[src/docval/cli.py] 261L C:0 F:5 CC↑12 D:0 (python)\n  M[src/docval/validators/llm_validator.py] 249L C:1 F:6 CC↑9 D:0 (python)\n  M[src/docval/context.py] 242L C:0 F:9 CC↑18 D:1 (python)\n  M[src/docval/validators/heuristic.py] 205L C:1 F:10 CC↑9 D:0 (python)\n  M[src/docval/validators/crossref.py] 169L C:1 F:6 CC↑11 D:0 (python)\n  M[src/docval/reporters/console.py] 165L C:1 F:6 CC↑10 D:0 (python)\n  M[src/docval/models.py] 148L C:8 F:3 CC↑4 D:0 (python)\n  M[src/docval/actions/executor.py] 142L C:2 F:5 CC↑17 D:0 (python)\n  M[src/docval/chunker.py] 111L C:0 F:3 CC↑12 D:2 (python)\n  M[src/docval/reporters/markdown_report.py] 100L C:1 F:1 CC↑19 D:0 (python)\n  M[src/docval/pipeline.py] 95L C:0 F:1 CC↑12 D:0 (python)\n  M[src/docval/reporters/json_report.py] 66L C:1 F:1 CC↑5 D:0 (python)\n  M[project.sh] 35L C:0 F:0 CC↑0 D:0 (shell)\n  M[src/docval/reporters/__init__.py] 6L C:0 F:0 CC↑0 D:0 (python)\n  M[src/docval/validators/__init__.py] 6L C:0 F:0 CC↑0 D:0 (python)\n  LANGS: python:16/shell:1\n\nHOTSPOTS[10]:\n  ★ chunk_file fan=16  // Parse a single Markdown file into heading-based chunks.\n\nEach chunk corresponds \n  ★ fix fan=16  // Validate and apply fixes to documentation.\n\nBy default runs in dry-run mode. Use\n  ★ _extract_python_symbols fan=16  // Extract class and function names from Python files using AST.\n  ★ scan fan=15  // Run the full validation pipeline.\n\nArgs:\n    docs_dir: Path to the documentation\n  ★ scan fan=13  // Scan documentation and report issues.\n\nDOCS_DIR is the path to the documentation\n\nREFACTOR[7]:\n  [1] M/L Split _extract_python_symbols (CC=18 → target CC&lt;10)\n  [2] M/L Split MarkdownReporter.report (CC=19 → target CC&lt;10)\n  [3] M/L Split ActionExecutor.execute (CC=17 → target CC&lt;10)\n  [4] M/L Break circular dependency: src.docval.context._decorator_name\n  [5] M/M Reduce chunk_file fan-out (currently 16)\n\nEVOLUTION:\n  2026-04-13 CC̄=6.3 crit=13 2502L // Automated analysis\n", "is_subdir": false}, {"name": "validation.toon.yaml", "rel_path": "validation.toon.yaml", "path": "validation.toon.yaml", "size": "1.6KB", "icon": "⚙️", "type": "yaml", "type_name": "YAML", "content": "# vallm batch | 32f | 18✓ 3⚠ 4✗ | 2026-04-13\n\nSUMMARY:\n  scanned: 32  passed: 18 (56.2%)  warnings: 3  errors: 4  unsupported: 10\n\nWARNINGS[3]{path,score}:\n  src/docval/reporters/markdown_report.py,0.96\n    issues[3]{rule,severity,message,line}:\n      complexity.cyclomatic,warning,MarkdownReporter has cyclomatic complexity 20 (max: 15),10\n      complexity.cyclomatic,warning,report has cyclomatic complexity 19 (max: 15),13\n      complexity.lizard_cc,warning,report: CC=19 exceeds limit 15,13\n  src/docval/actions/executor.py,0.97\n    issues[2]{rule,severity,message,line}:\n      complexity.cyclomatic,warning,execute has cyclomatic complexity 17 (max: 15),38\n      complexity.lizard_cc,warning,execute: CC=17 exceeds limit 15,38\n  src/docval/context.py,0.97\n    issues[2]{rule,severity,message,line}:\n      complexity.cyclomatic,warning,_extract_python_symbols has cyclomatic complexity 18 (max: 15),58\n      complexity.lizard_cc,warning,_extract_python_symbols: CC=18 exceeds limit 15,58\n\nERRORS[4]{path,score}:\n  tests/test_chunker.py,0.89\n    issues[1]{rule,severity,message,line}:\n      python.import.resolvable,error,Module 'pytest' not found,6\n  tests/test_crossref.py,0.89\n    issues[1]{rule,severity,message,line}:\n      python.import.resolvable,error,Module 'pytest' not found,5\n  tests/test_heuristic.py,0.89\n    issues[1]{rule,severity,message,line}:\n      python.import.resolvable,error,Module 'pytest' not found,5\n  tests/test_pipeline.py,0.89\n    issues[1]{rule,severity,message,line}:\n      python.import.resolvable,error,Module 'pytest' not found,5\n\nUNSUPPORTED[3]{bucket,count}:\n  *.md,4\n  *.txt,1\n  other,5\n", "is_subdir": false}];
+        let currentFile = null;
+
+        function renderFileList(filter = '') {
+            const list = document.getElementById('fileList');
+            const filtered = files.filter(f => 
+                f.name.toLowerCase().includes(filter.toLowerCase()) ||
+                f.path.toLowerCase().includes(filter.toLowerCase())
+            );
+            
+            if (filtered.length === 0) {
+                list.innerHTML = '<div class="empty-state">No files found</div>';
+                return;
+            }
+            
+            // Group by type
+            const groups = {};
+            for (const file of filtered) {
+                const type = file.type_name;
+                if (!groups[type]) groups[type] = [];
+                groups[type].push(file);
+            }
+            
+            let html = '';
+            for (const [typeName, groupFiles] of Object.entries(groups)) {
+                html += `
+                    <div class="file-group">
+                        <div class="file-group-title">${typeName} Files (${groupFiles.length})</div>
+                        ${groupFiles.map(f => `
+                            <div class="file-item ${currentFile?.name === f.name ? 'active' : ''}" 
+                                 onclick="selectFile('${f.name}')">
+                                <span class="file-icon">${f.icon}</span>
+                                <div class="file-info">
+                                    <div class="file-name">${f.name}</div>
+                                    <div class="file-meta">${f.path}</div>
+                                </div>
+                                <span class="file-size">${f.size}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+            
+            list.innerHTML = html;
+        }
+
+        function selectFile(name) {
+            const file = files.find(f => f.name === name);
+            if (!file) return;
+            
+            currentFile = file;
+            
+            document.getElementById('contentIcon').textContent = file.icon;
+            document.getElementById('contentTitle').textContent = file.name;
+            
+            // Actions
+            const actions = document.getElementById('contentActions');
+            actions.innerHTML = `
+                <a href="${file.rel_path}" download class="btn">⬇ Download</a>
+                <a href="${file.rel_path}" target="_blank" class="btn btn-primary">↗ Open Raw</a>
+            `;
+            
+            // Content
+            const body = document.getElementById('contentBody');
+            if (file.type === 'markdown') {
+                // Render markdown as HTML using marked.js
+                body.innerHTML = `<div class="markdown-content">${marked.parse(file.content)}</div>`;
+            } else if (file.type === 'html') {
+                // For HTML files, show in iframe for safety
+                body.innerHTML = `<iframe src="${file.rel_path}" style="width:100%;height:100%;border:none;border-radius:0.5rem;"></iframe>`;
+            } else if (file.type === 'image') {
+                // For images, display the actual image
+                body.innerHTML = `<div class="image-preview"><img src="${file.rel_path}" alt="${file.name}" style="max-width:100%;max-height:100%;object-fit:contain;border-radius:0.5rem;"></div>`;
+            } else if (file.type === 'mermaid') {
+                // Render mermaid diagram
+                const diagramId = 'mermaid-diagram-' + Date.now();
+                body.innerHTML = `<div class="mermaid-content"><pre class="mermaid" id="${diagramId}">${file.content}</pre></div>`;
+                // Initialize mermaid on the new element
+                setTimeout(() => {
+                    mermaid.init(undefined, document.getElementById(diagramId));
+                }, 0);
+            } else if (file.type === 'json') {
+                try {
+                    const json = JSON.parse(file.content.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&'));
+                    const formatted = JSON.stringify(json, null, 2);
+                    body.innerHTML = `<pre><code class="language-json">${formatted.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
+                    hljs.highlightElement(body.querySelector('code'));
+                } catch {
+                    body.innerHTML = `<pre>${file.content}</pre>`;
+                }
+            } else if (file.type === 'yaml') {
+                // YAML with syntax highlighting
+                body.innerHTML = `<pre><code class="language-yaml">${file.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
+                hljs.highlightElement(body.querySelector('code'));
+            } else if (file.type === 'toon') {
+                // TOON with simple highlighting (use ini as closest match for key: value format)
+                body.innerHTML = `<pre><code class="language-ini">${file.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
+                hljs.highlightElement(body.querySelector('code'));
+            } else if (file.type === 'code') {
+                // Code files with auto-highlighting
+                body.innerHTML = `<pre><code>${file.content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
+                hljs.highlightElement(body.querySelector('code'));
+            } else {
+                body.innerHTML = `<pre>${file.content}</pre>`;
+            }
+            
+            renderFileList(document.getElementById('search').value);
+        }
+
+        function filterFiles(query) {
+            renderFileList(query);
+        }
+
+        function renderStats() {
+            const stats = {};
+            for (const f of files) {
+                stats[f.type_name] = (stats[f.type_name] || 0) + 1;
+            }
+            
+            const grid = document.getElementById('statsGrid');
+            grid.innerHTML = Object.entries(stats)
+                .sort((a, b) => b[1] - a[1])
+                .map(([type, count]) => `
+                    <div class="stat-card">
+                        <div class="stat-value">${count}</div>
+                        <div class="stat-label">${type}</div>
+                    </div>
+                `).join('');
+        }
+
+        // Initialize
+        renderStats();
+        renderFileList();
+        
+        // Select first file if available
+        if (files.length > 0) {
+            selectFile(files[0].name);
+        }
+    </script>
+</body>
+</html>

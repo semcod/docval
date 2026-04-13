@@ -1,0 +1,38 @@
+# vallm batch | 32f | 18✓ 3⚠ 4✗ | 2026-04-13
+
+SUMMARY:
+  scanned: 32  passed: 18 (56.2%)  warnings: 3  errors: 4  unsupported: 10
+
+WARNINGS[3]{path,score}:
+  src/docval/reporters/markdown_report.py,0.96
+    issues[3]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,MarkdownReporter has cyclomatic complexity 20 (max: 15),10
+      complexity.cyclomatic,warning,report has cyclomatic complexity 19 (max: 15),13
+      complexity.lizard_cc,warning,report: CC=19 exceeds limit 15,13
+  src/docval/actions/executor.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,execute has cyclomatic complexity 17 (max: 15),38
+      complexity.lizard_cc,warning,execute: CC=17 exceeds limit 15,38
+  src/docval/context.py,0.97
+    issues[2]{rule,severity,message,line}:
+      complexity.cyclomatic,warning,_extract_python_symbols has cyclomatic complexity 18 (max: 15),58
+      complexity.lizard_cc,warning,_extract_python_symbols: CC=18 exceeds limit 15,58
+
+ERRORS[4]{path,score}:
+  tests/test_chunker.py,0.89
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'pytest' not found,6
+  tests/test_crossref.py,0.89
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'pytest' not found,5
+  tests/test_heuristic.py,0.89
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'pytest' not found,5
+  tests/test_pipeline.py,0.89
+    issues[1]{rule,severity,message,line}:
+      python.import.resolvable,error,Module 'pytest' not found,5
+
+UNSUPPORTED[3]{bucket,count}:
+  *.md,4
+  *.txt,1
+  other,5

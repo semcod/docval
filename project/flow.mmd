@@ -1,0 +1,25 @@
+flowchart TD
+
+    %% Entry points (blue)
+    classDef entry fill:#4dabf7,stroke:#1971c2,color:#fff
+
+    subgraph Core
+        src__docval__pipeline__scan["scan"]
+        src__docval__cli__main["main"]
+        src__docval__cli__scan["scan"]
+        src__docval__cli__fix["fix"]
+        src__docval__cli__patch["patch"]
+        src__docval__cli__stats["stats"]
+        src__docval__context__build_context["build_context"]
+        src__docval__context___extract_python_symbols{{_extract_python_symbols CC=18}}
+        src__docval__context___decorator_name["_decorator_name"]
+        src__docval__validators__llm_validator__LLMValidator__validate["validate"]
+        src__docval__validators__llm_validator__LLMValidator___validate_chunk["_validate_chunk"]
+        src__docval__validators__llm_validator__LLMValidator___build_prompt["_build_prompt"]
+        src__docval__validators__llm_validator__LLMValidator___build_context_summary["_build_context_summary"]
+        src__docval__validators__llm_validator__LLMValidator___parse_response["_parse_response"]
+        src__docval__validators__crossref__CrossRefValidator___build_symbol_set["_build_symbol_set"]
+        ...["+27 more"]
+    end
+
+    class src__docval__pipeline__scan,src__docval__cli__main,src__docval__cli__scan,src__docval__cli__fix,src__docval__cli__patch,src__docval__cli__stats,src__docval__validators__llm_validator__LLMValidator__validate,src__docval__validators__llm_validator__LLMValidator___validate_chunk,src__docval__validators__llm_validator__LLMValidator___build_prompt,src__docval__validators__llm_validator__LLMValidator___build_context_summary entry
