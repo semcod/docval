@@ -1,0 +1,348 @@
+project:
+  name: docval
+  version: 0.1.1
+  source: docval-scan
+  generated_at: '2026-04-13T14:42:25.373243Z'
+integrations:
+  github:
+    enabled: false
+    owner: ''
+    repo: ''
+    label_prefix: doc-
+    auto_sync: false
+  gitlab:
+    enabled: false
+    project_id: null
+    auto_sync: false
+current_sprint:
+  id: doc-cleanup
+  goal: Clean up documentation based on docval validation
+  start_date: '2026-04-13'
+  end_date: ''
+  status: active
+tickets:
+  DOC-001:
+    id: DOC-001
+    title: 'Fix broken link: (preamble)'
+    description: 'Internal link target not found: ./LICENSE'
+    status: open
+    priority: critical
+    sprint: doc-cleanup
+    labels:
+    - broken_link
+    - documentation
+    - auto-generated
+    acceptance_criteria:
+    - Check if './LICENSE' was moved or deleted
+    source:
+      tool: docval
+      file: /home/tom/github/semcod/docval/docs/README.md
+      line_start: 1
+      line_end: 11
+      issue_type: broken_link
+      issue_count: 1
+    actions:
+    - type: fix
+      confidence: 0.85
+    sync: {}
+  DOC-002:
+    id: DOC-002
+    title: 'Remove empty section: Installation'
+    description: 'Section has no meaningful content
+
+      Section contains only a heading with no body text'
+    status: open
+    priority: high
+    sprint: doc-cleanup
+    labels:
+    - empty
+    - heading_only
+    - documentation
+    - auto-generated
+    acceptance_criteria:
+    - Issue is resolved
+    source:
+      tool: docval
+      file: /home/tom/github/semcod/docval/docs/README.md
+      line_start: 12
+      line_end: 13
+      issue_type: empty
+      issue_count: 2
+    actions:
+    - type: delete
+      confidence: 0.95
+    sync: {}
+  DOC-003:
+    id: DOC-003
+    title: 'Remove empty section: Quick Start'
+    description: 'Section has no meaningful content
+
+      Section contains only a heading with no body text'
+    status: open
+    priority: high
+    sprint: doc-cleanup
+    labels:
+    - empty
+    - heading_only
+    - documentation
+    - auto-generated
+    acceptance_criteria:
+    - Issue is resolved
+    source:
+      tool: docval
+      file: /home/tom/github/semcod/docval/docs/README.md
+      line_start: 36
+      line_end: 37
+      issue_type: empty
+      issue_count: 2
+    actions:
+    - type: delete
+      confidence: 0.95
+    sync: {}
+  DOC-004:
+    id: DOC-004
+    title: 'Remove empty section: CLI Usage'
+    description: Section has no meaningful content
+    status: open
+    priority: high
+    sprint: doc-cleanup
+    labels:
+    - empty
+    - documentation
+    - auto-generated
+    acceptance_criteria:
+    - Issue is resolved
+    source:
+      tool: docval
+      file: /home/tom/github/semcod/docval/docs/README.md
+      line_start: 38
+      line_end: 40
+      issue_type: empty
+      issue_count: 1
+    actions:
+    - type: delete
+      confidence: 0.95
+    sync: {}
+  DOC-005:
+    id: DOC-005
+    title: 'Remove empty section: Generate full documentation for your project'
+    description: Section has no meaningful content
+    status: open
+    priority: high
+    sprint: doc-cleanup
+    labels:
+    - empty
+    - documentation
+    - auto-generated
+    acceptance_criteria:
+    - Issue is resolved
+    source:
+      tool: docval
+      file: /home/tom/github/semcod/docval/docs/README.md
+      line_start: 41
+      line_end: 43
+      issue_type: empty
+      issue_count: 1
+    actions:
+    - type: delete
+      confidence: 0.95
+    sync: {}
+  DOC-006:
+    id: DOC-006
+    title: 'Remove empty section: API Overview'
+    description: 'Section has no meaningful content
+
+      Section contains only a heading with no body text'
+    status: open
+    priority: high
+    sprint: doc-cleanup
+    labels:
+    - empty
+    - heading_only
+    - documentation
+    - auto-generated
+    acceptance_criteria:
+    - Issue is resolved
+    source:
+      tool: docval
+      file: /home/tom/github/semcod/docval/docs/README.md
+      line_start: 153
+      line_end: 154
+      issue_type: empty
+      issue_count: 2
+    actions:
+    - type: delete
+      confidence: 0.95
+    sync: {}
+  DOC-007:
+    id: DOC-007
+    title: 'Fix broken link: Contributing'
+    description: 'Internal link target not found: ./CONTRIBUTING.md'
+    status: open
+    priority: critical
+    sprint: doc-cleanup
+    labels:
+    - broken_link
+    - documentation
+    - auto-generated
+    acceptance_criteria:
+    - Check if './CONTRIBUTING.md' was moved or deleted
+    source:
+      tool: docval
+      file: /home/tom/github/semcod/docval/docs/README.md
+      line_start: 213
+      line_end: 219
+      issue_type: broken_link
+      issue_count: 1
+    actions:
+    - type: fix
+      confidence: 0.85
+    sync: {}
+  DOC-008:
+    id: DOC-008
+    title: 'Remove empty section: Development Setup'
+    description: Section has no meaningful content
+    status: open
+    priority: high
+    sprint: doc-cleanup
+    labels:
+    - empty
+    - documentation
+    - auto-generated
+    acceptance_criteria:
+    - Issue is resolved
+    source:
+      tool: docval
+      file: /home/tom/github/semcod/docval/docs/README.md
+      line_start: 220
+      line_end: 222
+      issue_type: empty
+      issue_count: 1
+    actions:
+    - type: delete
+      confidence: 0.95
+    sync: {}
+  DOC-009:
+    id: DOC-009
+    title: 'Remove empty section: Run tests'
+    description: Section has no meaningful content
+    status: open
+    priority: high
+    sprint: doc-cleanup
+    labels:
+    - empty
+    - documentation
+    - auto-generated
+    acceptance_criteria:
+    - Issue is resolved
+    source:
+      tool: docval
+      file: /home/tom/github/semcod/docval/docs/README.md
+      line_start: 230
+      line_end: 233
+      issue_type: empty
+      issue_count: 1
+    actions:
+    - type: delete
+      confidence: 0.95
+    sync: {}
+  DOC-010:
+    id: DOC-010
+    title: 'Fix broken link: Documentation'
+    description: 'Internal link target not found: ./examples'
+    status: open
+    priority: critical
+    sprint: doc-cleanup
+    labels:
+    - broken_link
+    - documentation
+    - auto-generated
+    acceptance_criteria:
+    - Check if './examples' was moved or deleted
+    source:
+      tool: docval
+      file: /home/tom/github/semcod/docval/docs/README.md
+      line_start: 234
+      line_end: 241
+      issue_type: broken_link
+      issue_count: 1
+    actions:
+    - type: fix
+      confidence: 0.85
+    sync: {}
+  DOC-011:
+    id: DOC-011
+    title: 'Fix broken link: Generated Files'
+    description: 'Internal link target not found: ./docs/api.md
+
+      Internal link target not found: ./docs/modules.md
+
+      Internal link target not found: ./docs/architecture.md
+
+      Internal link target not found: ./docs/dependency-graph.md
+
+      Internal link target not found: ./docs/coverage.md
+
+      Internal link target not found: ./docs/getting-started.md
+
+      Internal link target not found: ./docs/configuration.md
+
+      Internal link target not found: ./docs/api-changelog.md
+
+      Internal link target not found: ./CONTRIBUTING.md
+
+      Internal link target not found: ./examples
+
+      References 3 unknown code symbol(s): README.md, CONTRIBUTING.md, mkdocs.yml'
+    status: open
+    priority: critical
+    sprint: doc-cleanup
+    labels:
+    - broken_link
+    - orphaned_code_ref
+    - documentation
+    - auto-generated
+    acceptance_criteria:
+    - Check if './docs/api.md' was moved or deleted
+    - Check if './docs/modules.md' was moved or deleted
+    - Check if './docs/architecture.md' was moved or deleted
+    - Check if './docs/dependency-graph.md' was moved or deleted
+    - Check if './docs/coverage.md' was moved or deleted
+    - Check if './docs/getting-started.md' was moved or deleted
+    - Check if './docs/configuration.md' was moved or deleted
+    - Check if './docs/api-changelog.md' was moved or deleted
+    - Check if './CONTRIBUTING.md' was moved or deleted
+    - Check if './examples' was moved or deleted
+    - These may be outdated API references or typos
+    source:
+      tool: docval
+      file: /home/tom/github/semcod/docval/docs/README.md
+      line_start: 242
+      line_end: 259
+      issue_type: broken_link
+      issue_count: 11
+    actions:
+    - type: fix
+      confidence: 0.85
+    sync: {}
+backlog: []
+sync:
+  github:
+    enabled: false
+    last_sync: null
+    ticket_map: {}
+  gitlab:
+    enabled: false
+    last_sync: null
+    ticket_map: {}
+metadata:
+  docval_version: 0.1.1
+  scan_date: '2026-04-13'
+  files_scanned: 1
+  total_issues: 32
+  health_score: 0.66
+  issues_by_type:
+    broken_link: 13
+    empty: 7
+    heading_only: 3
+    orphaned_code_ref: 1

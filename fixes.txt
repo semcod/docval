@@ -1,0 +1,67 @@
+# FIX NEEDED /home/tom/github/semcod/docval/docs/README.md:1-11
+# Section: (preamble)
+#   Issue: Internal link target not found: ./LICENSE
+#   Suggestion: Check if './LICENSE' was moved or deleted
+
+# DELETE /home/tom/github/semcod/docval/docs/README.md:12-13
+# Section: Installation
+# Reason: Section has no meaningful content
+
+# DELETE /home/tom/github/semcod/docval/docs/README.md:36-37
+# Section: Quick Start
+# Reason: Section has no meaningful content
+
+# DELETE /home/tom/github/semcod/docval/docs/README.md:38-40
+# Section: CLI Usage
+# Reason: Section has no meaningful content
+
+# DELETE /home/tom/github/semcod/docval/docs/README.md:41-43
+# Section: Generate full documentation for your project
+# Reason: Section has no meaningful content
+
+# DELETE /home/tom/github/semcod/docval/docs/README.md:153-154
+# Section: API Overview
+# Reason: Section has no meaningful content
+
+# FIX NEEDED /home/tom/github/semcod/docval/docs/README.md:213-219
+# Section: Contributing
+#   Issue: Internal link target not found: ./CONTRIBUTING.md
+#   Suggestion: Check if './CONTRIBUTING.md' was moved or deleted
+
+# DELETE /home/tom/github/semcod/docval/docs/README.md:220-222
+# Section: Development Setup
+# Reason: Section has no meaningful content
+
+# DELETE /home/tom/github/semcod/docval/docs/README.md:230-233
+# Section: Run tests
+# Reason: Section has no meaningful content
+
+# FIX NEEDED /home/tom/github/semcod/docval/docs/README.md:234-241
+# Section: Documentation
+#   Issue: Internal link target not found: ./examples
+#   Suggestion: Check if './examples' was moved or deleted
+
+# FIX NEEDED /home/tom/github/semcod/docval/docs/README.md:242-259
+# Section: Generated Files
+#   Issue: Internal link target not found: ./docs/api.md
+#   Suggestion: Check if './docs/api.md' was moved or deleted
+#   Issue: Internal link target not found: ./docs/modules.md
+#   Suggestion: Check if './docs/modules.md' was moved or deleted
+#   Issue: Internal link target not found: ./docs/architecture.md
+#   Suggestion: Check if './docs/architecture.md' was moved or deleted
+#   Issue: Internal link target not found: ./docs/dependency-graph.md
+#   Suggestion: Check if './docs/dependency-graph.md' was moved or deleted
+#   Issue: Internal link target not found: ./docs/coverage.md
+#   Suggestion: Check if './docs/coverage.md' was moved or deleted
+#   Issue: Internal link target not found: ./docs/getting-started.md
+#   Suggestion: Check if './docs/getting-started.md' was moved or deleted
+#   Issue: Internal link target not found: ./docs/configuration.md
+#   Suggestion: Check if './docs/configuration.md' was moved or deleted
+#   Issue: Internal link target not found: ./docs/api-changelog.md
+#   Suggestion: Check if './docs/api-changelog.md' was moved or deleted
+#   Issue: Internal link target not found: ./CONTRIBUTING.md
+#   Suggestion: Check if './CONTRIBUTING.md' was moved or deleted
+#   Issue: Internal link target not found: ./examples
+#   Suggestion: Check if './examples' was moved or deleted
+#   Issue: References 3 unknown code symbol(s): README.md, CONTRIBUTING.md, mkdocs.yml
+#   Suggestion: These may be outdated API references or typos

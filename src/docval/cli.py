@@ -257,5 +257,149 @@ def stats(docs_dir: Path, exclude: tuple[str, ...]):
         click.echo(f"    {f.total_lines:>5}L  {f.relative_path}")
 
 
+@main.command("sync-planfile")
+@click.argument("docs_dir", type=click.Path(exists=True, file_okay=False, path_type=Path))
+@click.option("--project", "-p", type=click.Path(exists=True, file_okay=False, path_type=Path),
+              default=None, help="Project root (default: parent of docs_dir)")
+@click.option("--exclude", "-e", multiple=True, help="Directory names to exclude")
+@click.option("--export-yaml", is_flag=True, help="Export to planfile.yaml")
+@click.option("--export-todo", is_flag=True, help="Export to TODO.md")
+@click.option("--github-owner", help="GitHub owner/organization")
+@click.option("--github-repo", help="GitHub repository name")
+@click.option("--github-token", help="GitHub token (or set GITHUB_TOKEN env var)")
+@click.option("--gitlab-project", help="GitLab project ID")
+@click.option("--gitlab-token", help="GitLab token (or set GITLAB_TOKEN env var)")
+@click.option("--gitlab-url", default="https://gitlab.com", help="GitLab instance URL")
+@click.option("--dry-run/--no-dry-run", default=True,
+              help="Preview changes without applying (default: dry-run)")
+@click.option("--sprint-id", default="doc-cleanup", help="Sprint identifier")
+@click.option("--verbose", "-v", is_flag=True, help="Verbose output")
+def sync_planfile(
+    docs_dir: Path,
+    project: Path | None,
+    exclude: tuple[str, ...],
+    export_yaml: bool,
+    export_todo: bool,
+    github_owner: str | None,
+    github_repo: str | None,
+    github_token: str | None,
+    gitlab_project: str | None,
+    gitlab_token: str | None,
+    gitlab_url: str,
+    dry_run: bool,
+    sprint_id: str,
+    verbose: bool,
+):
+    """Sync docval results to planfile, GitHub, or GitLab.
+
+    By default runs in dry-run mode. Use --no-dry-run to apply changes.
+
+    Examples:
+
+        docval sync-planfile docs/ --export-yaml --export-todo
+
+        docval sync-planfile docs/ --github-owner wronai --github-repo docval --no-dry-run
+
+        docval sync-planfile docs/ --gitlab-project 12345 --no-dry-run
+    """
+    from .pipeline import scan as run_scan
+    from .exporters import TodoExporter, PlanfileExporter, GitHubExporter, GitLabExporter
+
+    if project is None:
+        project = docs_dir.parent
+
+    docs_dir = docs_dir.resolve()
+    project = project.resolve()
+
+    # Run scan
+    if verbose:
+        click.echo(f"Scanning documentation in {docs_dir}...")
+
+    result = run_scan(
+        docs_dir=docs_dir,
+        project_root=project,
+        exclude=list(exclude),
+        use_llm=False,
+        verbose=verbose,
+    )
+
+    click.echo(f"Found {len(result.doc_files)} files with issues to export")
+
+    # Export to TODO.md
+    if export_todo:
+        todo_path = project / "TODO.md"
+        exporter = TodoExporter()
+        exporter.export(result, output_path=todo_path)
+        click.echo(f"  ✓ Exported to {todo_path}")
+
+    # Export to planfile.yaml
+    if export_yaml:
+        planfile_path = project / "planfile.yaml"
+        exporter = PlanfileExporter(
+            project_name=project.name,
+            github_owner=github_owner,
+            github_repo=github_repo,
+        )
+        exporter.export(result, output_path=planfile_path, sprint_id=sprint_id)
+        click.echo(f"  ✓ Exported to {planfile_path}")
+
+    # Export to GitHub
+    if github_owner and github_repo:
+        if dry_run:
+            click.echo(f"\n[DRY RUN] Would export to GitHub: {github_owner}/{github_repo}")
+        else:
+            click.echo(f"\nExporting to GitHub: {github_owner}/{github_repo}...")
+
+        exporter = GitHubExporter(
+            owner=github_owner,
+            repo=github_repo,
+            token=github_token,
+            dry_run=dry_run,
+        )
+        results = exporter.export(result)
+
+        created = sum(1 for r in results if r.get("status") == "created")
+        updated = sum(1 for r in results if r.get("status") == "updated")
+        failed = sum(1 for r in results if r.get("status") == "failed")
+
+        if dry_run:
+            click.echo(f"  Would create {len(results)} issues")
+        else:
+            click.echo(f"  Created: {created}, Updated: {updated}, Failed: {failed}")
+
+    # Export to GitLab
+    if gitlab_project:
+        if dry_run:
+            click.echo(f"\n[DRY RUN] Would export to GitLab project: {gitlab_project}")
+        else:
+            click.echo(f"\nExporting to GitLab project: {gitlab_project}...")
+
+        exporter = GitLabExporter(
+            project_id=gitlab_project,
+            token=gitlab_token,
+            url=gitlab_url,
+            dry_run=dry_run,
+        )
+        results = exporter.export(result)
+
+        created = sum(1 for r in results if r.get("status") == "created")
+        failed = sum(1 for r in results if r.get("status") == "failed")
+
+        if dry_run:
+            click.echo(f"  Would create {len(results)} issues")
+        else:
+            click.echo(f"  Created: {created}, Failed: {failed}")
+
+    # If no export options specified, show help
+    if not any([export_yaml, export_todo, github_owner, gitlab_project]):
+        click.echo("\nNo export destination specified. Use one of:")
+        click.echo("  --export-yaml       Export to planfile.yaml")
+        click.echo("  --export-todo       Export to TODO.md")
+        click.echo("  --github-owner      Export to GitHub Issues")
+        click.echo("  --gitlab-project    Export to GitLab Issues")
+        click.echo("\nExample:")
+        click.echo("  docval sync-planfile docs/ --export-yaml --export-todo")
+
+
 if __name__ == "__main__":
     main()

@@ -1,7 +1,7 @@
-# vallm batch | 32f | 18✓ 3⚠ 4✗ | 2026-04-13
+# vallm batch | 35f | 23✓ 3⚠ 0✗ | 2026-04-13
 
 SUMMARY:
-  scanned: 32  passed: 18 (56.2%)  warnings: 3  errors: 4  unsupported: 10
+  scanned: 35  passed: 23 (65.7%)  warnings: 3  errors: 0  unsupported: 12
 
 WARNINGS[3]{path,score}:
   src/docval/reporters/markdown_report.py,0.96
@@ -18,21 +18,7 @@ WARNINGS[3]{path,score}:
       complexity.cyclomatic,warning,_extract_python_symbols has cyclomatic complexity 18 (max: 15),58
       complexity.lizard_cc,warning,_extract_python_symbols: CC=18 exceeds limit 15,58
 
-ERRORS[4]{path,score}:
-  tests/test_chunker.py,0.89
-    issues[1]{rule,severity,message,line}:
-      python.import.resolvable,error,Module 'pytest' not found,6
-  tests/test_crossref.py,0.89
-    issues[1]{rule,severity,message,line}:
-      python.import.resolvable,error,Module 'pytest' not found,5
-  tests/test_heuristic.py,0.89
-    issues[1]{rule,severity,message,line}:
-      python.import.resolvable,error,Module 'pytest' not found,5
-  tests/test_pipeline.py,0.89
-    issues[1]{rule,severity,message,line}:
-      python.import.resolvable,error,Module 'pytest' not found,5
-
 UNSUPPORTED[3]{bucket,count}:
-  *.md,4
+  *.md,5
   *.txt,1
-  other,5
+  other,6
