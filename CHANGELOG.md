@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.3] - 2026-04-14
+
+### Docs
+- Update README.md
+- Update docs/README.md
+- Update docs/_archive/benchmarks/astgrep/README.md
+- Update docs/_archive/benchmarks/bandit/README.md
+- Update docs/_archive/benchmarks/baseline/README.md
+- Update docs/_archive/benchmarks/callgraph/README.md
+- Update docs/_archive/benchmarks/code2logic/README.md
+- Update docs/_archive/benchmarks/radon/README.md
+- Update docs/_archive/comparisons/README.md
+
+### Test
+- Update tests/test_chunker.py
+- Update tests/test_heuristic.py
+- Update tests/test_pipeline.py
+
 ## [0.1.2] - 2026-04-13
 
 ### Docs

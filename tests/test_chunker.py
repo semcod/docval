@@ -116,10 +116,10 @@ class TestDiscoverFiles:
         assert "guide.md" in names
         assert "api.md" in names
 
-    def test_includes_archive(self, docs_tree):
+    def test_excludes_archive(self, docs_tree):
         files = discover_md_files(docs_tree)
         paths = {str(f.relative_to(docs_tree)) for f in files}
-        assert any("archive" in p for p in paths)
+        assert not any("archive" in p for p in paths)
 
     def test_excludes_node_modules(self, docs_tree):
         files = discover_md_files(docs_tree)
@@ -127,8 +127,8 @@ class TestDiscoverFiles:
         assert not any("node_modules" in p for p in rel_paths)
 
     def test_custom_excludes(self, docs_tree):
-        files = discover_md_files(docs_tree, exclude_patterns=["archive"])
-        assert not any("archive" in str(f) for f in files)
+        files = discover_md_files(docs_tree, exclude_patterns=["extra_dir"])
+        assert not any("extra_dir" in str(f) for f in files)
 
 
 class TestChunkDirectory:

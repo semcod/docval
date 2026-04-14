@@ -67,8 +67,9 @@ class TestFullPipeline:
             docs_dir=project_with_docs / "docs",
             project_root=project_with_docs,
         )
+        # archive/ is excluded from discovery, so only 3 files scanned
         assert result.files_scanned >= 3
-        assert result.chunks_total >= 4
+        assert result.chunks_total >= 3
 
     def test_detects_valid_content(self, project_with_docs):
         result = scan(
@@ -103,17 +104,52 @@ class TestFullPipeline:
         ]
         assert len(empty) >= 1
 
-    def test_detects_archive_path(self, project_with_docs):
+    def test_excludes_archive_from_scan(self, project_with_docs):
         result = scan(
             docs_dir=project_with_docs / "docs",
             project_root=project_with_docs,
         )
+        # archive/ directory is excluded from discovery
         archived = [
-            c for f in result.doc_files for c in f.chunks
+            f for f in result.doc_files
             if "archive/" in f.relative_path.lower()
         ]
+        assert len(archived) == 0
+
+    def test_detects_archive_path_heuristic(self, tmp_path):
+        """Files in archive/ are detected as outdated by the heuristic validator."""
+        src = tmp_path / "mypackage"
+        src.mkdir()
+        (src / "__init__.py").write_text('"""My package."""\n')
+
+        docs = tmp_path / "docs"
+        docs.mkdir()
+        archive = docs / "archive"
+        archive.mkdir()
+        (archive / "legacy.md").write_text(
+            "# Legacy Documentation\n\nThis covers the old deployment workflow.\n"
+        )
+
+        # Manually chunk the archive file to test heuristic detection
+        from docval.chunker import chunk_file
+        from docval.context import build_context
+        from docval.validators.heuristic import HeuristicValidator
+        from docval.models import DocFile
+
+        doc = chunk_file(archive / "legacy.md", base_dir=docs)
+        doc_file = DocFile(
+            path=archive / "legacy.md",
+            relative_path="archive/legacy.md",
+            chunks=doc.chunks,
+            total_lines=doc.total_lines,
+        )
+
+        ctx = build_context(tmp_path)
+        v = HeuristicValidator(ctx=ctx)
+        v.validate([doc_file])
+
+        archived = [c for c in doc_file.chunks if c.status == ChunkStatus.OUTDATED]
         assert len(archived) >= 1
-        assert all(c.status == ChunkStatus.OUTDATED for c in archived)
 
     def test_result_counts(self, project_with_docs):
         result = scan(

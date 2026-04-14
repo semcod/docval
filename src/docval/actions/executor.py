@@ -45,7 +45,7 @@ class ActionExecutor:
 
         for doc_file in doc_files:
             all_archive = all(
-                c.action == ActionType.ARCHIVE for c in doc_file.chunks if c.chunks
+                c.action == ActionType.ARCHIVE for c in doc_file.chunks if c.issues
             ) if doc_file.chunks else False
 
             for chunk in doc_file.chunks:

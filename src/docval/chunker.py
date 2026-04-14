@@ -92,7 +92,7 @@ def discover_md_files(
     exclude_patterns: list[str] | None = None,
 ) -> list[Path]:
     """Recursively find all .md files, excluding node_modules, .git, etc."""
-    default_excludes = {"node_modules", ".git", "__pycache__", ".venv", "venv", ".tox"}
+    default_excludes = {"node_modules", ".git", "__pycache__", ".venv", "venv", ".tox", "_archive", "archive"}
     excludes = default_excludes | set(exclude_patterns or [])
 
     result: list[Path] = []

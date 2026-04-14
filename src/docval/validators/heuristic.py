@@ -36,7 +36,7 @@ class HeuristicValidator:
             for chunk in doc_file.chunks:
                 self._check_empty(chunk)
                 self._check_outdated_markers(chunk)
-                self._check_broken_internal_links(chunk, doc_file)
+                self._check_broken_internal_links(chunk, doc_file, self.ctx)
                 self._check_todo_fixme(chunk)
                 self._check_archive_path(chunk, doc_file)
                 self._check_stale_versions(chunk)
@@ -65,7 +65,7 @@ class HeuristicValidator:
         """Detect explicit outdated/deprecated markers."""
         outdated_patterns = [
             (r"\b(DEPRECATED|OBSOLETE|DO NOT USE)\b", "Explicit deprecation marker"),
-            (r"\b(OLD|LEGACY|ARCHIVED)\b.*\b(version|api|approach)\b", "Legacy reference"),
+            (r"(?i)\b(legacy|archived)\s+(version|api|approach|code|module|system)\b", "Legacy reference"),
             (r"(?i)\bthis\s+(document|page|section)\s+is\s+(no longer|outdated|deprecated)", "Self-declared outdated"),
         ]
 
@@ -78,13 +78,18 @@ class HeuristicValidator:
                 chunk.add_issue("outdated_marker", Severity.WARNING, message)
                 return
 
-    def _check_broken_internal_links(self, chunk: DocChunk, doc_file: DocFile):
+    def _check_broken_internal_links(self, chunk: DocChunk, doc_file: DocFile, ctx: ProjectContext | None = None):
         """Check for internal Markdown links pointing to non-existent files."""
+        # Strip fenced code blocks to avoid matching Python calls like func(arg)
+        content_no_code = re.sub(r"```[\s\S]*?```", "", chunk.content)
+        # Also strip inline code
+        content_no_code = re.sub(r"`[^`]+`", "", content_no_code)
+
         link_re = re.compile(r"\[([^\]]*)\]\(([^)]+)\)")
-        for match in link_re.finditer(chunk.content):
+        for match in link_re.finditer(content_no_code):
             target = match.group(2)
-            # Skip external URLs and anchors
-            if target.startswith(("http://", "https://", "#", "mailto:")):
+            # Skip external URLs, anchors, and absolute paths (GitHub Pages style)
+            if target.startswith(("http://", "https://", "#", "mailto:", "/")):
                 continue
 
             # Resolve relative path
@@ -92,8 +97,19 @@ class HeuristicValidator:
             if not target_path:
                 continue
 
-            resolved = doc_file.path.parent / target_path
-            if not resolved.exists():
+            # Try multiple resolution strategies
+            candidates = [
+                doc_file.path.parent / target_path,
+                doc_file.path.parent / (target_path + ".md"),
+            ]
+            # Also try resolving relative to project root
+            if ctx and ctx.root:
+                candidates.extend([
+                    ctx.root / target_path,
+                    ctx.root / (target_path + ".md"),
+                ])
+
+            if not any(c.exists() for c in candidates):
                 chunk.add_issue(
                     "broken_link",
                     Severity.ERROR,
@@ -119,8 +135,8 @@ class HeuristicValidator:
 
     def _check_archive_path(self, chunk: DocChunk, doc_file: DocFile):
         """Files in archive/ directories are likely outdated."""
-        rel = str(doc_file.path)
-        if "/archive/" in rel.lower() or rel.lower().startswith("archive/"):
+        rel = doc_file.relative_path.lower()
+        if "/archive/" in rel or rel.startswith("archive/") or "/_archive/" in rel or rel.startswith("_archive/"):
             if chunk.status in (ChunkStatus.UNCHECKED, ChunkStatus.VALID, ChunkStatus.EMPTY):
                 chunk.status = ChunkStatus.OUTDATED
                 chunk.action = ActionType.ARCHIVE
@@ -164,6 +180,9 @@ class HeuristicValidator:
 
     def _check_duplicates(self, chunk: DocChunk):
         """Detect near-duplicate content across chunks using SequenceMatcher."""
+        # Skip chunks already resolved by earlier checks
+        if chunk.status != ChunkStatus.UNCHECKED and chunk.status != ChunkStatus.VALID:
+            return
         if chunk.word_count < 30:
             return
 

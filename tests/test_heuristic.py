@@ -138,3 +138,61 @@ class TestBrokenLinks:
         v = HeuristicValidator()
         v.validate([doc])
         assert not any(i.rule == "broken_link" for i in chunk.issues)
+
+    def test_resolves_md_extension(self, tmp_path):
+        """Links like [API](./api) should resolve to ./api.md."""
+        md = tmp_path / "readme.md"
+        md.write_text("text")
+        (tmp_path / "api.md").write_text("API docs")
+        chunk = _make_chunk("See [API](./api) for details.", file_name=str(md))
+        chunk.file = md
+        doc = _make_file([chunk], str(md))
+        doc.path = md
+
+        v = HeuristicValidator()
+        v.validate([doc])
+        assert not any(i.rule == "broken_link" for i in chunk.issues)
+
+    def test_resolves_relative_to_project_root(self, tmp_path):
+        """Links like ./LICENSE in docs/README.md should resolve from project root."""
+        docs_dir = tmp_path / "docs"
+        docs_dir.mkdir()
+        md = docs_dir / "README.md"
+        md.write_text("text")
+        (tmp_path / "LICENSE").write_text("MIT")
+        chunk = _make_chunk("See [License](./LICENSE).", file_name=str(md))
+        chunk.file = md
+        doc = _make_file([chunk], str(md))
+        doc.path = md
+
+        ctx = ProjectContext(root=tmp_path)
+        v = HeuristicValidator(ctx=ctx)
+        v.validate([doc])
+        assert not any(i.rule == "broken_link" for i in chunk.issues)
+
+
+class TestArchivePathExtended:
+    def test_flags_underscore_archive_directory(self):
+        chunk = _make_chunk(
+            "This section describes the old deployment process.",
+            file_name="docs/_archive/old-guide.md",
+        )
+        doc = _make_file([chunk], path="docs/_archive/old-guide.md")
+        v = HeuristicValidator()
+        v.validate([doc])
+        assert chunk.status == ChunkStatus.OUTDATED
+
+
+class TestOutdatedMarkersNarrow:
+    def test_does_not_flag_old_version_in_normal_text(self):
+        """'old version' in normal descriptive text should not be flagged."""
+        chunk = _make_chunk("This replaces the old version with a new implementation.")
+        v = HeuristicValidator()
+        v.validate([_make_file([chunk])])
+        assert chunk.status != ChunkStatus.OUTDATED
+
+    def test_flags_legacy_api(self):
+        chunk = _make_chunk("This is the legacy API and should not be used.")
+        v = HeuristicValidator()
+        v.validate([_make_file([chunk])])
+        assert chunk.status == ChunkStatus.OUTDATED

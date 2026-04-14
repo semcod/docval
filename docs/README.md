@@ -9,8 +9,6 @@
 **License:** Apache-2.0[(LICENSE)](./LICENSE)  
 **Repository:** [https://github.com/semcod/docval](https://github.com/semcod/docval)
 
-## Installation
-
 ### From PyPI
 
 ```bash
@@ -32,14 +30,6 @@ pip install docval[llm]    # LLM integration (litellm)
 pip install docval[all]    # all optional features
 pip install docval[dev]    # development tools
 ```
-
-## Quick Start
-
-### CLI Usage
-
-```bash
-# Generate full documentation for your project
-docval ./my-project
 
 # Only regenerate README
 docval ./my-project --readme-only
@@ -150,8 +140,6 @@ Content outside the markers is preserved when regenerating. Enable this with `sy
 docval/
 ├── project    ├── docval/        ├── chunker        ├── cli        ├── pipeline        ├── actions/        ├── context        ├── validators/            ├── llm_validator            ├── heuristic        ├── reporters/            ├── crossref            ├── markdown_report            ├── json_report            ├── console            ├── executor        ├── models```
 
-## API Overview
-
 ### Classes
 
 - **`LLMValidator`** — Validate documentation chunks using an LLM via litellm.
@@ -215,11 +203,8 @@ docval/
 **Contributors:**
 - Tom Sapletta <tom-sapletta-com@users.noreply.github.com>
 
-We welcome contributions! Please see [CONTRIBUTING.md](./CONTRIBUTING.md) for guidelines.
+We welcome contributions! Please see [CONTRIBUTING.md](https://github.com/wronai/docval/blob/main/CONTRIBUTING.md) for guidelines.
 
-### Development Setup
-
-```bash
 # Clone the repository
 git clone https://github.com/semcod/docval
 cd docval
@@ -227,33 +212,29 @@ cd docval
 # Install in development mode
 pip install -e ".[dev]"
 
-# Run tests
-pytest
-```
-
 ## Documentation
 
 - 📖 [Full Documentation](https://github.com/semcod/docval/tree/main/docs) — API reference, module docs, architecture
 - 🚀 [Getting Started](https://github.com/semcod/docval/blob/main/docs/getting-started.md) — Quick start guide
 - 📚 [API Reference](https://github.com/semcod/docval/blob/main/docs/api.md) — Complete API documentation
 - 🔧 [Configuration](https://github.com/semcod/docval/blob/main/docs/configuration.md) — Configuration options
-- 💡 [Examples](./examples) — Usage examples and code samples
+- 💡 [Examples](https://github.com/wronai/docval/tree/main/examples) — Usage examples and code samples
 
 ### Generated Files
 
 | Output | Description | Link |
 |--------|-------------|------|
 | `README.md` | Project overview (this file) | — |
-| `docs/api.md` | Consolidated API reference | [View](./docs/api.md) |
-| `docs/modules.md` | Module reference with metrics | [View](./docs/modules.md) |
-| `docs/architecture.md` | Architecture with diagrams | [View](./docs/architecture.md) |
-| `docs/dependency-graph.md` | Dependency graphs | [View](./docs/dependency-graph.md) |
-| `docs/coverage.md` | Docstring coverage report | [View](./docs/coverage.md) |
-| `docs/getting-started.md` | Getting started guide | [View](./docs/getting-started.md) |
-| `docs/configuration.md` | Configuration reference | [View](./docs/configuration.md) |
-| `docs/api-changelog.md` | API change tracking | [View](./docs/api-changelog.md) |
-| `CONTRIBUTING.md` | Contribution guidelines | [View](./CONTRIBUTING.md) |
-| `examples/` | Usage examples | [Browse](./examples) |
+| `docs/api.md` | Consolidated API reference | [View](https://github.com/wronai/docval/blob/main/docs/api.md) |
+| `docs/modules.md` | Module reference with metrics | [View](https://github.com/wronai/docval/blob/main/docs/modules.md) |
+| `docs/architecture.md` | Architecture with diagrams | [View](https://github.com/wronai/docval/blob/main/docs/architecture.md) |
+| `docs/dependency-graph.md` | Dependency graphs | [View](https://github.com/wronai/docval/blob/main/docs/dependency-graph.md) |
+| `docs/coverage.md` | Docstring coverage report | [View](https://github.com/wronai/docval/blob/main/docs/coverage.md) |
+| `docs/getting-started.md` | Getting started guide | [View](https://github.com/wronai/docval/blob/main/docs/getting-started.md) |
+| `docs/configuration.md` | Configuration reference | [View](https://github.com/wronai/docval/blob/main/docs/configuration.md) |
+| `docs/api-changelog.md` | API change tracking | [View](https://github.com/wronai/docval/blob/main/docs/api-changelog.md) |
+| `CONTRIBUTING.md` | Contribution guidelines | [View](https://github.com/wronai/docval/blob/main/CONTRIBUTING.md) |
+| `examples/` | Usage examples | [Browse](https://github.com/wronai/docval/tree/main/examples) |
 | `mkdocs.yml` | MkDocs configuration | — |
 
 <!-- code2docs:end -->
