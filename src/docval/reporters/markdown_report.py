@@ -4,7 +4,23 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from ..models import ActionType, ChunkStatus, DocFile, ValidationResult
+from ..models import ActionType, ChunkStatus, ValidationResult
+
+
+_STATUS_EMOJIS = {
+    ChunkStatus.INVALID: "❌",
+    ChunkStatus.OUTDATED: "⚠️",
+    ChunkStatus.DUPLICATE: "🔁",
+    ChunkStatus.ORPHANED: "🔗",
+    ChunkStatus.EMPTY: "📭",
+}
+
+_ACTION_LABELS = {
+    ActionType.DELETE: "delete",
+    ActionType.ARCHIVE: "archive",
+    ActionType.FIX: "fix needed",
+    ActionType.FLAG: "review",
+}
 
 
 class MarkdownReporter:
@@ -13,20 +29,30 @@ class MarkdownReporter:
     def report(self, result: ValidationResult, output: Path):
         """Write validation report to a Markdown file."""
         result.update_counts()
-        lines: list[str] = []
+        lines = self._build_report_lines(result)
+        output.write_text("\n".join(lines), encoding="utf-8")
 
-        lines.append("# Documentation validation report")
-        lines.append("")
+    def _build_report_lines(self, result: ValidationResult) -> list[str]:
+        lines: list[str] = []
+        lines.extend(self._build_summary_lines(result))
+        lines.extend(self._build_issue_lines(result))
+        lines.extend(self._build_action_lines(result))
+        return lines
+
+    def _build_summary_lines(self, result: ValidationResult) -> list[str]:
         total = result.chunks_total
         valid_pct = result.chunks_valid / total * 100 if total else 0
-        lines.append(f"**Files scanned:** {result.files_scanned}  ")
-        lines.append(f"**Total sections:** {total}  ")
-        lines.append(f"**Health:** {valid_pct:.0f}% valid")
-        lines.append("")
+        lines = [
+            "# Documentation validation report",
+            "",
+            f"**Files scanned:** {result.files_scanned}  ",
+            f"**Total sections:** {total}  ",
+            f"**Health:** {valid_pct:.0f}% valid",
+            "",
+            "| Status | Count |",
+            "|--------|------:|",
+        ]
 
-        # Summary table
-        lines.append("| Status | Count |")
-        lines.append("|--------|------:|")
         for label, count in [
             ("Valid", result.chunks_valid),
             ("Outdated", result.chunks_outdated),
@@ -37,64 +63,55 @@ class MarkdownReporter:
         ]:
             if count > 0:
                 lines.append(f"| {label} | {count} |")
-        lines.append("")
 
-        # Issues by file
+        lines.append("")
+        return lines
+
+    def _build_issue_lines(self, result: ValidationResult) -> list[str]:
+        lines: list[str] = []
         files_with_issues = [
-            f for f in result.doc_files
-            if any(c.status != ChunkStatus.VALID for c in f.chunks)
+            doc_file
+            for doc_file in result.doc_files
+            if any(chunk.status != ChunkStatus.VALID for chunk in doc_file.chunks)
         ]
 
-        if files_with_issues:
-            lines.append("## Issues by file")
+        if not files_with_issues:
+            return lines
+
+        lines.extend(["## Issues by file", ""])
+        for doc_file in files_with_issues:
+            lines.append(f"### `{doc_file.relative_path}`")
             lines.append("")
 
-            for doc_file in files_with_issues:
-                lines.append(f"### `{doc_file.relative_path}`")
-                lines.append("")
+            for chunk in doc_file.chunks:
+                if chunk.status == ChunkStatus.VALID:
+                    continue
 
-                for chunk in doc_file.chunks:
-                    if chunk.status == ChunkStatus.VALID:
-                        continue
+                status_emoji = _STATUS_EMOJIS.get(chunk.status, "❓")
+                action_label = _ACTION_LABELS.get(chunk.action, "keep")
+                lines.append(
+                    f"- {status_emoji} **L{chunk.line_start}–{chunk.line_end}** "
+                    f"`{chunk.heading}` → {chunk.status.value} ({action_label})"
+                )
 
-                    status_emoji = {
-                        ChunkStatus.INVALID: "❌",
-                        ChunkStatus.OUTDATED: "⚠️",
-                        ChunkStatus.DUPLICATE: "🔁",
-                        ChunkStatus.ORPHANED: "🔗",
-                        ChunkStatus.EMPTY: "📭",
-                    }.get(chunk.status, "❓")
+                for issue in chunk.issues:
+                    lines.append(f"  - {issue.message}")
+                    if issue.suggestion:
+                        lines.append(f"    - 💡 {issue.suggestion}")
 
-                    action_label = {
-                        ActionType.DELETE: "delete",
-                        ActionType.ARCHIVE: "archive",
-                        ActionType.FIX: "fix needed",
-                        ActionType.FLAG: "review",
-                    }.get(chunk.action, "keep")
+            lines.append("")
 
-                    lines.append(
-                        f"- {status_emoji} **L{chunk.line_start}–{chunk.line_end}** "
-                        f"`{chunk.heading}` → {chunk.status.value} ({action_label})"
-                    )
+        return lines
 
-                    for issue in chunk.issues:
-                        lines.append(f"  - {issue.message}")
-                        if issue.suggestion:
-                            lines.append(f"    - 💡 {issue.suggestion}")
-
-                lines.append("")
-
-        # Action summary
+    def _build_action_lines(self, result: ValidationResult) -> list[str]:
         actions = {a: 0 for a in ActionType}
-        for f in result.doc_files:
-            for c in f.chunks:
-                actions[c.action] += 1
+        for doc_file in result.doc_files:
+            for chunk in doc_file.chunks:
+                actions[chunk.action] += 1
 
-        lines.append("## Recommended actions")
-        lines.append("")
+        lines = ["## Recommended actions", ""]
         for action, count in actions.items():
             if count > 0 and action != ActionType.KEEP:
                 lines.append(f"- **{action.value}**: {count} section(s)")
         lines.append("")
-
-        output.write_text("\n".join(lines), encoding="utf-8")
+        return lines

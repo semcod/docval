@@ -24,6 +24,12 @@ class ActionResult:
     errors: list[str] = field(default_factory=list)
 
 
+@dataclass
+class _ActionPlan:
+    files_to_archive: list[DocFile] = field(default_factory=list)
+    files_with_deletions: dict[Path, list[tuple[int, int]]] = field(default_factory=dict)
+
+
 class ActionExecutor:
     """Execute remediation actions on doc files."""
 
@@ -38,53 +44,81 @@ class ActionExecutor:
     def execute(self, doc_files: list[DocFile], base_dir: Path) -> ActionResult:
         """Apply all pending actions. Returns summary."""
         result = ActionResult()
-
-        # Group by action type
-        files_to_archive: list[DocFile] = []
-        files_with_deletions: dict[Path, list[int]] = {}  # file -> line ranges to remove
-
-        for doc_file in doc_files:
-            all_archive = all(
-                c.action == ActionType.ARCHIVE for c in doc_file.chunks if c.issues
-            ) if doc_file.chunks else False
-
-            for chunk in doc_file.chunks:
-                if chunk.action == ActionType.DELETE:
-                    files_with_deletions.setdefault(doc_file.path, []).append(
-                        (chunk.line_start, chunk.line_end)
-                    )
-                    result.deleted_chunks += 1
-                elif chunk.action == ActionType.ARCHIVE:
-                    result.archived_files += 1
-                elif chunk.action == ActionType.FIX:
-                    result.fixed_chunks += 1
-                elif chunk.action == ActionType.FLAG:
-                    result.flagged_chunks += 1
-                else:
-                    result.skipped += 1
-
-            # If all chunks in a file should be archived, archive the whole file
-            if all_archive and doc_file.chunks:
-                files_to_archive.append(doc_file)
+        plan = self._collect_actions(doc_files, result)
 
         if self.dry_run:
             return result
 
-        # Execute deletions (remove sections from files)
+        self._apply_deletions(plan.files_with_deletions, result)
+        self._apply_archives(plan.files_to_archive, base_dir, result)
+
+        return result
+
+    def _collect_actions(self, doc_files: list[DocFile], result: ActionResult) -> _ActionPlan:
+        """Collect all requested actions into a reusable execution plan."""
+        plan = _ActionPlan()
+
+        for doc_file in doc_files:
+            if self._should_archive_file(doc_file):
+                plan.files_to_archive.append(doc_file)
+
+            for chunk in doc_file.chunks:
+                self._record_chunk_action(doc_file, chunk, plan, result)
+
+        return plan
+
+    def _should_archive_file(self, doc_file: DocFile) -> bool:
+        """Return True when every actionable chunk in a file is archived."""
+        return bool(doc_file.chunks) and all(
+            c.action == ActionType.ARCHIVE for c in doc_file.chunks if c.issues
+        )
+
+    def _record_chunk_action(
+        self,
+        doc_file: DocFile,
+        chunk,
+        plan: _ActionPlan,
+        result: ActionResult,
+    ):
+        """Update counters and collect delete ranges for a single chunk."""
+        if chunk.action == ActionType.DELETE:
+            plan.files_with_deletions.setdefault(doc_file.path, []).append(
+                (chunk.line_start, chunk.line_end)
+            )
+            result.deleted_chunks += 1
+        elif chunk.action == ActionType.ARCHIVE:
+            result.archived_files += 1
+        elif chunk.action == ActionType.FIX:
+            result.fixed_chunks += 1
+        elif chunk.action == ActionType.FLAG:
+            result.flagged_chunks += 1
+        else:
+            result.skipped += 1
+
+    def _apply_deletions(
+        self,
+        files_with_deletions: dict[Path, list[tuple[int, int]]],
+        result: ActionResult,
+    ):
+        """Apply file section deletions and record any failures."""
         for filepath, ranges in files_with_deletions.items():
             try:
                 self._delete_sections(filepath, ranges)
             except OSError as e:
                 result.errors.append(f"Delete failed for {filepath}: {e}")
 
-        # Execute archives (move files to archive directory)
+    def _apply_archives(
+        self,
+        files_to_archive: list[DocFile],
+        base_dir: Path,
+        result: ActionResult,
+    ):
+        """Apply archive operations and record any failures."""
         for doc_file in files_to_archive:
             try:
                 self._archive_file(doc_file.path, base_dir)
             except OSError as e:
                 result.errors.append(f"Archive failed for {doc_file.path}: {e}")
-
-        return result
 
     def _delete_sections(self, filepath: Path, ranges: list[tuple[int, int]]):
         """Remove line ranges from a file."""

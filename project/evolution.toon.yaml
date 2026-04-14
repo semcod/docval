@@ -1,26 +1,14 @@
-# code2llm/evolution | 56 func | 12f | 2026-04-13
+# code2llm/evolution | 117 func | 16f | 2026-04-14
 
-NEXT[3] (ranked by impact):
-  [1] !  SPLIT-FUNC      _extract_python_symbols  CC=18  fan=16
-      WHY: CC=18 exceeds 15
-      EFFORT: ~1h  IMPACT: 288
-
-  [2] !  SPLIT-FUNC      ActionExecutor.execute  CC=17  fan=9
-      WHY: CC=17 exceeds 15
-      EFFORT: ~1h  IMPACT: 153
-
-  [3] !  SPLIT-FUNC      MarkdownReporter.report  CC=19  fan=7
-      WHY: CC=19 exceeds 15
-      EFFORT: ~1h  IMPACT: 133
-
+NEXT[0]: no refactoring needed
 
 RISKS[0]: none
 
 METRICS-TARGET:
-  CC̄:          6.3 → ≤4.4
-  max-CC:      19 → ≤9
+  CC̄:          4.9 → ≤3.4
+  max-CC:      12 → ≤6
   god-modules: 0 → 0
-  high-CC(≥15): 3 → ≤1
+  high-CC(≥15): 0 → ≤0
   hub-types:   0 → ≤0
 
 PATTERNS (language parser shared logic):
@@ -48,4 +36,4 @@ PATTERNS (language parser shared logic):
     - Standardized FunctionInfo/ClassInfo models
 
 HISTORY:
-  prev CC̄=6.3 → now CC̄=6.3
+  prev CC̄=6.1 → now CC̄=4.9

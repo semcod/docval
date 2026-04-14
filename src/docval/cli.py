@@ -6,6 +6,154 @@ from pathlib import Path
 
 import click
 
+from .models import ActionType
+
+
+def _resolve_project_paths(docs_dir: Path, project: Path | None) -> tuple[Path, Path]:
+    docs_dir = docs_dir.resolve()
+    project = (project or docs_dir.parent).resolve()
+    return docs_dir, project
+
+
+def _run_scan(
+    docs_dir: Path,
+    project: Path,
+    exclude: tuple[str, ...],
+    llm: bool,
+    model: str,
+    verbose: bool,
+):
+    from .pipeline import scan as run_scan
+
+    return run_scan(
+        docs_dir=docs_dir,
+        project_root=project,
+        exclude=list(exclude),
+        use_llm=llm,
+        llm_model=model,
+        verbose=verbose,
+    )
+
+
+def _summarize_actions(result):
+    action_counts: dict[str, int] = {}
+    for doc_file in result.doc_files:
+        for chunk in doc_file.chunks:
+            if chunk.action != ActionType.KEEP:
+                action_counts[chunk.action.value] = action_counts.get(chunk.action.value, 0) + 1
+    return action_counts
+
+
+def _print_action_counts(action_counts: dict[str, int]):
+    if not action_counts:
+        click.echo("\nNo actions to apply — all documentation looks good.")
+        return False
+
+    click.echo("\nPending actions:")
+    for action, count in action_counts.items():
+        click.echo(f"  {action}: {count}")
+    return True
+
+
+def _export_todo(result, project: Path):
+    from .exporters import TodoExporter
+
+    todo_path = project / "TODO.md"
+    TodoExporter().export(result, output_path=todo_path)
+    click.echo(f"  ✓ Exported to {todo_path}")
+
+
+def _export_planfile(
+    result,
+    project: Path,
+    github_owner: str | None,
+    github_repo: str | None,
+    sprint_id: str,
+):
+    from .exporters import PlanfileExporter
+
+    planfile_path = project / "planfile.yaml"
+    exporter = PlanfileExporter(
+        project_name=project.name,
+        github_owner=github_owner,
+        github_repo=github_repo,
+    )
+    exporter.export(result, output_path=planfile_path, sprint_id=sprint_id)
+    click.echo(f"  ✓ Exported to {planfile_path}")
+
+
+def _export_github(
+    result,
+    github_owner: str,
+    github_repo: str,
+    github_token: str | None,
+    dry_run: bool,
+):
+    from .exporters import GitHubExporter
+
+    if dry_run:
+        click.echo(f"\n[DRY RUN] Would export to GitHub: {github_owner}/{github_repo}")
+    else:
+        click.echo(f"\nExporting to GitHub: {github_owner}/{github_repo}...")
+
+    exporter = GitHubExporter(
+        owner=github_owner,
+        repo=github_repo,
+        token=github_token,
+        dry_run=dry_run,
+    )
+    results = exporter.export(result)
+
+    created = sum(1 for r in results if r.get("status") == "created")
+    updated = sum(1 for r in results if r.get("status") == "updated")
+    failed = sum(1 for r in results if r.get("status") == "failed")
+
+    if dry_run:
+        click.echo(f"  Would create {len(results)} issues")
+    else:
+        click.echo(f"  Created: {created}, Updated: {updated}, Failed: {failed}")
+
+
+def _export_gitlab(
+    result,
+    gitlab_project: str,
+    gitlab_token: str | None,
+    gitlab_url: str,
+    dry_run: bool,
+):
+    from .exporters import GitLabExporter
+
+    if dry_run:
+        click.echo(f"\n[DRY RUN] Would export to GitLab project: {gitlab_project}")
+    else:
+        click.echo(f"\nExporting to GitLab project: {gitlab_project}...")
+
+    exporter = GitLabExporter(
+        project_id=gitlab_project,
+        token=gitlab_token,
+        url=gitlab_url,
+        dry_run=dry_run,
+    )
+    results = exporter.export(result)
+
+    created = sum(1 for r in results if r.get("status") == "created")
+    failed = sum(1 for r in results if r.get("status") == "failed")
+
+    if dry_run:
+        click.echo(f"  Would create {len(results)} issues")
+    else:
+        click.echo(f"  Created: {created}, Failed: {failed}")
+
+
+def _print_sync_planfile_help():
+    click.echo("\nNo export destination specified. Use one of:")
+    click.echo("  --export-yaml       Export to planfile.yaml")
+    click.echo("  --export-todo       Export to TODO.md")
+    click.echo("  --github-owner      Export to GitHub Issues")
+    click.echo("  --gitlab-project    Export to GitLab Issues")
+    click.echo("\nExample:")
+    click.echo("  docval sync-planfile docs/ --export-yaml --export-todo")
+
 
 @click.group()
 @click.version_option(package_name="docval")
@@ -44,17 +192,10 @@ def scan(
 
         docval scan docs/ -o report.json -v
     """
-    from .pipeline import scan as run_scan
     from .reporters import ConsoleReporter, MarkdownReporter, JSONReporter
 
-    result = run_scan(
-        docs_dir=docs_dir,
-        project_root=project,
-        exclude=list(exclude),
-        use_llm=llm,
-        llm_model=model,
-        verbose=verbose,
-    )
+    docs_dir, project = _resolve_project_paths(docs_dir, project)
+    result = _run_scan(docs_dir, project, exclude, llm, model, verbose)
 
     # Console report (always)
     console_reporter = ConsoleReporter(verbose=verbose)
@@ -106,18 +247,11 @@ def fix(
 
         docval fix docs/ --no-dry-run --llm        # with LLM validation
     """
-    from .pipeline import scan as run_scan
     from .actions import ActionExecutor
     from .reporters import ConsoleReporter
 
-    result = run_scan(
-        docs_dir=docs_dir,
-        project_root=project,
-        exclude=list(exclude),
-        use_llm=llm,
-        llm_model=model,
-        verbose=verbose,
-    )
+    docs_dir, project = _resolve_project_paths(docs_dir, project)
+    result = _run_scan(docs_dir, project, exclude, llm, model, verbose)
 
     # Show report
     ConsoleReporter(verbose=verbose).report(result)
@@ -136,20 +270,9 @@ def fix(
         return
 
     if not force:
-        from .models import ActionType
-        action_counts = {}
-        for f in result.doc_files:
-            for c in f.chunks:
-                if c.action != ActionType.KEEP:
-                    action_counts[c.action.value] = action_counts.get(c.action.value, 0) + 1
-
-        if not action_counts:
-            click.echo("\nNo actions to apply — all documentation looks good.")
+        action_counts = _summarize_actions(result)
+        if not _print_action_counts(action_counts):
             return
-
-        click.echo("\nPending actions:")
-        for action, count in action_counts.items():
-            click.echo(f"  {action}: {count}")
 
         if not click.confirm("\nApply these changes?"):
             click.echo("Aborted.")
@@ -192,17 +315,10 @@ def patch(
 
         docval patch docs/ --llm -o fixes.txt
     """
-    from .pipeline import scan as run_scan
     from .actions import ActionExecutor
 
-    result = run_scan(
-        docs_dir=docs_dir,
-        project_root=project,
-        exclude=list(exclude),
-        use_llm=llm,
-        llm_model=model,
-        verbose=False,
-    )
+    docs_dir, project = _resolve_project_paths(docs_dir, project)
+    result = _run_scan(docs_dir, project, exclude, llm, model, False)
 
     executor = ActionExecutor(dry_run=True)
     patch_text = executor.generate_patch(result.doc_files)
@@ -302,103 +418,34 @@ def sync_planfile(
 
         docval sync-planfile docs/ --gitlab-project 12345 --no-dry-run
     """
-    from .pipeline import scan as run_scan
-    from .exporters import TodoExporter, PlanfileExporter, GitHubExporter, GitLabExporter
+    docs_dir, project = _resolve_project_paths(docs_dir, project)
 
-    if project is None:
-        project = docs_dir.parent
-
-    docs_dir = docs_dir.resolve()
-    project = project.resolve()
-
-    # Run scan
     if verbose:
         click.echo(f"Scanning documentation in {docs_dir}...")
 
-    result = run_scan(
-        docs_dir=docs_dir,
-        project_root=project,
-        exclude=list(exclude),
-        use_llm=False,
-        verbose=verbose,
-    )
+    result = _run_scan(docs_dir, project, exclude, False, "gpt-4o-mini", verbose)
 
     click.echo(f"Found {len(result.doc_files)} files with issues to export")
 
-    # Export to TODO.md
+    exported = False
     if export_todo:
-        todo_path = project / "TODO.md"
-        exporter = TodoExporter()
-        exporter.export(result, output_path=todo_path)
-        click.echo(f"  ✓ Exported to {todo_path}")
+        _export_todo(result, project)
+        exported = True
 
-    # Export to planfile.yaml
     if export_yaml:
-        planfile_path = project / "planfile.yaml"
-        exporter = PlanfileExporter(
-            project_name=project.name,
-            github_owner=github_owner,
-            github_repo=github_repo,
-        )
-        exporter.export(result, output_path=planfile_path, sprint_id=sprint_id)
-        click.echo(f"  ✓ Exported to {planfile_path}")
+        _export_planfile(result, project, github_owner, github_repo, sprint_id)
+        exported = True
 
-    # Export to GitHub
     if github_owner and github_repo:
-        if dry_run:
-            click.echo(f"\n[DRY RUN] Would export to GitHub: {github_owner}/{github_repo}")
-        else:
-            click.echo(f"\nExporting to GitHub: {github_owner}/{github_repo}...")
+        _export_github(result, github_owner, github_repo, github_token, dry_run)
+        exported = True
 
-        exporter = GitHubExporter(
-            owner=github_owner,
-            repo=github_repo,
-            token=github_token,
-            dry_run=dry_run,
-        )
-        results = exporter.export(result)
-
-        created = sum(1 for r in results if r.get("status") == "created")
-        updated = sum(1 for r in results if r.get("status") == "updated")
-        failed = sum(1 for r in results if r.get("status") == "failed")
-
-        if dry_run:
-            click.echo(f"  Would create {len(results)} issues")
-        else:
-            click.echo(f"  Created: {created}, Updated: {updated}, Failed: {failed}")
-
-    # Export to GitLab
     if gitlab_project:
-        if dry_run:
-            click.echo(f"\n[DRY RUN] Would export to GitLab project: {gitlab_project}")
-        else:
-            click.echo(f"\nExporting to GitLab project: {gitlab_project}...")
+        _export_gitlab(result, gitlab_project, gitlab_token, gitlab_url, dry_run)
+        exported = True
 
-        exporter = GitLabExporter(
-            project_id=gitlab_project,
-            token=gitlab_token,
-            url=gitlab_url,
-            dry_run=dry_run,
-        )
-        results = exporter.export(result)
-
-        created = sum(1 for r in results if r.get("status") == "created")
-        failed = sum(1 for r in results if r.get("status") == "failed")
-
-        if dry_run:
-            click.echo(f"  Would create {len(results)} issues")
-        else:
-            click.echo(f"  Created: {created}, Failed: {failed}")
-
-    # If no export options specified, show help
-    if not any([export_yaml, export_todo, github_owner, gitlab_project]):
-        click.echo("\nNo export destination specified. Use one of:")
-        click.echo("  --export-yaml       Export to planfile.yaml")
-        click.echo("  --export-todo       Export to TODO.md")
-        click.echo("  --github-owner      Export to GitHub Issues")
-        click.echo("  --gitlab-project    Export to GitLab Issues")
-        click.echo("\nExample:")
-        click.echo("  docval sync-planfile docs/ --export-yaml --export-todo")
+    if not exported:
+        _print_sync_planfile_help()
 
 
 if __name__ == "__main__":

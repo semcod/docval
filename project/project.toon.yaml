@@ -1,37 +1,37 @@
-# docval | 56 func | 12f | 2502L | python | 2026-04-13
+# docval | 117 func | 16f | 3909L | python | 2026-04-14
 
 HEALTH:
-  CC̄=6.3  critical=13 (limit:10)  dup=0  cycles=1
+  CC̄=4.9  critical=14 (limit:10)  dup=0  cycles=1
 
-ALERTS[15]:
+ALERTS[16]:
   !!  high_fan_out     chunk_file = 16 (limit:10)
   !!  high_fan_out     fix = 16 (limit:10)
-  !!  high_fan_out     _extract_python_symbols = 16 (limit:10)
   !!  high_fan_out     scan = 15 (limit:10)
-  !   cc_exceeded      MarkdownReporter.report = 19 (limit:15)
-  !   cc_exceeded      _extract_python_symbols = 18 (limit:15)
-  !   cc_exceeded      ActionExecutor.execute = 17 (limit:15)
-  !   high_fan_out     scan = 13 (limit:10)
   !   high_fan_out     _extract_dependencies = 13 (limit:10)
   !   high_fan_out     _parse_toon_files = 13 (limit:10)
+  !   high_fan_out     scan = 13 (limit:10)
+  !   high_fan_out     sync_planfile = 13 (limit:10)
+  !   high_fan_out     patch = 12 (limit:10)
+  !   high_fan_out     stats = 11 (limit:10)
+  !   high_fan_out     CrossRefValidator._check_import_paths = 11 (limit:10)
 
-MODULES[17] (top by size):
-  M[src/docval/cli.py] 261L C:0 F:5 CC↑12 D:0 (python)
+MODULES[22] (top by size):
+  M[src/docval/cli.py] 452L C:0 F:15 CC↑10 D:0 (python)
+  M[src/docval/exporters/github.py] 289L C:1 F:10 CC↑11 D:0 (python)
+  M[src/docval/context.py] 256L C:0 F:13 CC↑12 D:1 (python)
+  M[src/docval/exporters/todo.py] 251L C:2 F:8 CC↑11 D:0 (python)
   M[src/docval/validators/llm_validator.py] 249L C:1 F:6 CC↑9 D:0 (python)
-  M[src/docval/context.py] 242L C:0 F:9 CC↑18 D:1 (python)
-  M[src/docval/validators/heuristic.py] 205L C:1 F:10 CC↑9 D:0 (python)
-  M[src/docval/validators/crossref.py] 169L C:1 F:6 CC↑11 D:0 (python)
+  M[src/docval/validators/heuristic.py] 224L C:1 F:10 CC↑9 D:0 (python)
+  M[src/docval/exporters/planfile.py] 223L C:1 F:7 CC↑9 D:0 (python)
+  M[src/docval/exporters/gitlab.py] 219L C:1 F:7 CC↑11 D:0 (python)
+  M[src/docval/validators/crossref.py] 217L C:1 F:12 CC↑11 D:0 (python)
+  M[src/docval/actions/executor.py] 176L C:3 F:10 CC↑12 D:0 (python)
   M[src/docval/reporters/console.py] 165L C:1 F:6 CC↑10 D:0 (python)
   M[src/docval/models.py] 148L C:8 F:3 CC↑4 D:0 (python)
-  M[src/docval/actions/executor.py] 142L C:2 F:5 CC↑17 D:0 (python)
+  M[src/docval/reporters/markdown_report.py] 117L C:1 F:5 CC↑10 D:0 (python)
   M[src/docval/chunker.py] 111L C:0 F:3 CC↑12 D:2 (python)
-  M[src/docval/reporters/markdown_report.py] 100L C:1 F:1 CC↑19 D:0 (python)
   M[src/docval/pipeline.py] 95L C:0 F:1 CC↑12 D:0 (python)
-  M[src/docval/reporters/json_report.py] 66L C:1 F:1 CC↑5 D:0 (python)
-  M[project.sh] 35L C:0 F:0 CC↑0 D:0 (shell)
-  M[src/docval/reporters/__init__.py] 6L C:0 F:0 CC↑0 D:0 (python)
-  M[src/docval/validators/__init__.py] 6L C:0 F:0 CC↑0 D:0 (python)
-  LANGS: python:16/shell:1
+  LANGS: python:21/shell:1
 
 HOTSPOTS[10]:
   ★ chunk_file fan=16  // Parse a single Markdown file into heading-based chunks.
@@ -40,21 +40,18 @@ Each chunk corresponds
   ★ fix fan=16  // Validate and apply fixes to documentation.
 
 By default runs in dry-run mode. Use
-  ★ _extract_python_symbols fan=16  // Extract class and function names from Python files using AST.
   ★ scan fan=15  // Run the full validation pipeline.
 
 Args:
     docs_dir: Path to the documentation
-  ★ scan fan=13  // Scan documentation and report issues.
+  ★ _extract_dependencies fan=13  // Extract dependency names from pyproject.toml or requirements.txt.
+  ★ _parse_toon_files fan=13  // Parse .toon.yaml files for code analysis data.
 
-DOCS_DIR is the path to the documentation
-
-REFACTOR[7]:
-  [1] M/L Split _extract_python_symbols (CC=18 → target CC<10)
-  [2] M/L Split MarkdownReporter.report (CC=19 → target CC<10)
-  [3] M/L Split ActionExecutor.execute (CC=17 → target CC<10)
-  [4] M/L Break circular dependency: src.docval.context._decorator_name
-  [5] M/M Reduce chunk_file fan-out (currently 16)
+REFACTOR[4]:
+  [1] M/L Break circular dependency: src.docval.context._decorator_name
+  [2] M/M Reduce chunk_file fan-out (currently 16)
+  [3] M/M Reduce fix fan-out (currently 16)
+  [4] M/M Reduce scan fan-out (currently 15)
 
 EVOLUTION:
-  2026-04-13 CC̄=6.3 crit=13 2502L // Automated analysis
+  2026-04-14 CC̄=4.9 crit=14 3909L // Automated analysis

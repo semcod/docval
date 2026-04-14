@@ -60,37 +60,51 @@ def _extract_python_symbols(ctx: ProjectContext, root: Path):
     for src in ctx.src_files:
         if not src.endswith(".py"):
             continue
-        filepath = root / src
-        try:
-            tree = ast.parse(filepath.read_text(encoding="utf-8", errors="replace"))
-        except (SyntaxError, OSError):
+        tree = _parse_python_ast(root / src)
+        if tree is None:
             continue
 
-        module_name = src.replace("/", ".").replace("\\", ".").removesuffix(".py")
-        ctx.modules.append(module_name)
+        ctx.modules.append(_module_name_from_src(src))
+        _collect_python_symbols(ctx, tree)
 
-        for node in ast.walk(tree):
-            if isinstance(node, ast.ClassDef):
-                ctx.classes.append(node.name)
-            elif isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
-                if not node.name.startswith("_"):
-                    ctx.functions.append(node.name)
+def _parse_python_ast(filepath: Path) -> ast.AST | None:
+    """Parse a Python source file and return its AST, or None on failure."""
+    try:
+        return ast.parse(filepath.read_text(encoding="utf-8", errors="replace"))
+    except (SyntaxError, OSError):
+        return None
 
-            # Detect Click/Typer CLI commands
-            if isinstance(node, ast.FunctionDef):
-                for dec in node.decorator_list:
-                    dec_name = _decorator_name(dec)
-                    if dec_name and ("command" in dec_name or "group" in dec_name):
-                        ctx.cli_commands.append(node.name)
 
-            # Detect REST endpoints
-            if isinstance(node, ast.FunctionDef):
-                for dec in node.decorator_list:
-                    dec_name = _decorator_name(dec)
-                    if dec_name and any(
-                        m in dec_name for m in (".get", ".post", ".put", ".delete", ".patch", ".route")
-                    ):
-                        ctx.endpoints.append(node.name)
+def _module_name_from_src(src: str) -> str:
+    """Convert a source path to a dotted module name."""
+    return src.replace("/", ".").replace("\\", ".").removesuffix(".py")
+
+
+def _collect_python_symbols(ctx: ProjectContext, tree: ast.AST):
+    """Collect classes, functions, CLI commands, and endpoints from an AST."""
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ClassDef):
+            ctx.classes.append(node.name)
+        elif isinstance(node, ast.FunctionDef | ast.AsyncFunctionDef):
+            if not node.name.startswith("_"):
+                ctx.functions.append(node.name)
+
+        if isinstance(node, ast.FunctionDef):
+            _collect_function_decorator_metadata(ctx, node)
+
+
+def _collect_function_decorator_metadata(ctx: ProjectContext, node: ast.FunctionDef):
+    """Detect CLI commands and REST endpoints from function decorators."""
+    for dec in node.decorator_list:
+        dec_name = _decorator_name(dec)
+        if not dec_name:
+            continue
+
+        if "command" in dec_name or "group" in dec_name:
+            ctx.cli_commands.append(node.name)
+
+        if any(m in dec_name for m in (".get", ".post", ".put", ".delete", ".patch", ".route")):
+            ctx.endpoints.append(node.name)
 
 
 def _decorator_name(dec) -> str:

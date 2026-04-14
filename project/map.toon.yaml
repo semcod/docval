@@ -1,46 +1,33 @@
-# docval | 17f 2007L | shell:1,python:16 | 2026-04-13
-# stats: 56 func | 0 cls | 17 mod | CC̄=6.3 | critical:3 | cycles:0
-# alerts[5]: CC MarkdownReporter.report=19; CC _extract_python_symbols=18; CC ActionExecutor.execute=17; fan-out _extract_python_symbols=16; fan-out chunk_file=16
-# hotspots[5]: chunk_file fan=16; fix fan=16; _extract_python_symbols fan=16; scan fan=15; scan fan=13
-# evolution: CC̄ 6.3→6.3 (flat 0.0)
+# docval | 22f 3320L | shell:1,python:21 | 2026-04-14
+# stats: 117 func | 0 cls | 22 mod | CC̄=4.9 | critical:0 | cycles:0
+# alerts[5]: fan-out chunk_file=16; fan-out fix=16; fan-out scan=15; fan-out _extract_dependencies=13; fan-out _parse_toon_files=13
+# hotspots[5]: chunk_file fan=16; fix fan=16; scan fan=15; _extract_dependencies fan=13; _parse_toon_files fan=13
+# evolution: CC̄ 6.1→4.9 (improved -1.2)
 # Keys: M=modules, D=details, i=imports, e=exports, c=classes, f=functions, m=methods
-M[17]:
+M[22]:
   project.sh,35
   src/docval/__init__.py,3
   src/docval/actions/__init__.py,4
-  src/docval/actions/executor.py,142
+  src/docval/actions/executor.py,176
   src/docval/chunker.py,111
-  src/docval/cli.py,261
-  src/docval/context.py,242
+  src/docval/cli.py,452
+  src/docval/context.py,256
+  src/docval/exporters/__init__.py,8
+  src/docval/exporters/github.py,289
+  src/docval/exporters/gitlab.py,219
+  src/docval/exporters/planfile.py,223
+  src/docval/exporters/todo.py,251
   src/docval/models.py,148
   src/docval/pipeline.py,95
   src/docval/reporters/__init__.py,6
   src/docval/reporters/console.py,165
   src/docval/reporters/json_report.py,66
-  src/docval/reporters/markdown_report.py,100
+  src/docval/reporters/markdown_report.py,117
   src/docval/validators/__init__.py,6
-  src/docval/validators/crossref.py,169
-  src/docval/validators/heuristic.py,205
+  src/docval/validators/crossref.py,217
+  src/docval/validators/heuristic.py,224
   src/docval/validators/llm_validator.py,249
 D:
-  src/docval/reporters/markdown_report.py:
-    e: MarkdownReporter
-    MarkdownReporter: report(2)  # Generate a Markdown report of validation results...
-  src/docval/context.py:
-    e: build_context,_collect_src_files,_extract_python_symbols,_decorator_name,_extract_version,_extract_dependencies,_parse_toon_files,_collect_git_info,_build_dir_tree
-    build_context(project_root;max_depth)
-    _collect_src_files(ctx;root;max_depth)
-    _extract_python_symbols(ctx;root)
-    _decorator_name(dec)
-    _extract_version(ctx;root)
-    _extract_dependencies(ctx;root)
-    _parse_toon_files(ctx;root)
-    _collect_git_info(ctx;root)
-    _build_dir_tree(ctx;root;max_depth)
-  src/docval/actions/executor.py:
-    e: ActionResult,ActionExecutor
-    ActionResult:  # Summary of executed actions...
-    ActionExecutor: __init__(2),execute(2),_delete_sections(2),_archive_file(2),generate_patch(1)  # Execute remediation actions on doc files...
   src/docval/chunker.py:
     e: chunk_file,discover_md_files,chunk_directory
     chunk_file(path;base_dir)
@@ -49,16 +36,59 @@ D:
   src/docval/pipeline.py:
     e: scan
     scan(docs_dir;project_root;exclude;use_llm;llm_model;verbose)
+  src/docval/context.py:
+    e: build_context,_collect_src_files,_extract_python_symbols,_parse_python_ast,_module_name_from_src,_collect_python_symbols,_collect_function_decorator_metadata,_decorator_name,_extract_version,_extract_dependencies,_parse_toon_files,_collect_git_info,_build_dir_tree
+    build_context(project_root;max_depth)
+    _collect_src_files(ctx;root;max_depth)
+    _extract_python_symbols(ctx;root)
+    _parse_python_ast(filepath)
+    _module_name_from_src(src)
+    _collect_python_symbols(ctx;tree)
+    _collect_function_decorator_metadata(ctx;node)
+    _decorator_name(dec)
+    _extract_version(ctx;root)
+    _extract_dependencies(ctx;root)
+    _parse_toon_files(ctx;root)
+    _collect_git_info(ctx;root)
+    _build_dir_tree(ctx;root;max_depth)
+  src/docval/actions/executor.py:
+    e: ActionResult,_ActionPlan,ActionExecutor
+    ActionResult:  # Summary of executed actions...
+    _ActionPlan:
+    ActionExecutor: __init__(2),execute(2),_collect_actions(2),_should_archive_file(1),_record_chunk_action(4),_apply_deletions(2),_apply_archives(3),_delete_sections(2),_archive_file(2),generate_patch(1)  # Execute remediation actions on doc files...
+  src/docval/validators/crossref.py:
+    e: CrossRefValidator
+    CrossRefValidator: __init__(1),_build_symbol_set(0),validate(1),_check_code_references(1),_check_import_paths(1),_check_cli_commands(1),_iter_cli_code_lines(1),_check_cli_line(2),_line_contains_known_cli(1),_is_common_shell_command(1),_potential_cli_invocation(2),_matches_known_cli(2)  # Validate documentation references against actual project cod...
+  src/docval/exporters/gitlab.py:
+    e: GitLabExporter
+    GitLabExporter: __init__(4),export(1),_preview_export(1),_execute_export(1),_generate_title(1),_generate_description(2),_generate_labels(1)  # Export validation results to GitLab Issues...
+  src/docval/exporters/github.py:
+    e: GitHubExporter
+    GitHubExporter: __init__(4),_get_github(0),export(1),_preview_export(1),_execute_export(1),_find_existing_issue(2),_generate_title(1),_generate_body(2),_generate_labels(1),sync_from_planfile(1)  # Export validation results to GitHub Issues...
+  src/docval/exporters/todo.py:
+    e: TodoTask,TodoExporter
+    TodoTask:  # A single task for the TODO list...
+    TodoExporter: __init__(1),export(2),_extract_tasks(1),_determine_priority(1),_generate_title(2),_generate_labels(3),_generate_todo_md(1),_format_task(1)  # Export validation results to TODO.md format...
   src/docval/cli.py:
-    e: main,scan,fix,patch,stats
+    e: _resolve_project_paths,_run_scan,_summarize_actions,_print_action_counts,_export_todo,_export_planfile,_export_github,_export_gitlab,_print_sync_planfile_help,main,scan,fix,patch,stats,sync_planfile
+    _resolve_project_paths(docs_dir;project)
+    _run_scan(docs_dir;project;exclude;llm;model;verbose)
+    _summarize_actions(result)
+    _print_action_counts(action_counts)
+    _export_todo(result;project)
+    _export_planfile(result;project;github_owner;github_repo;sprint_id)
+    _export_github(result;github_owner;github_repo;github_token;dry_run)
+    _export_gitlab(result;gitlab_project;gitlab_token;gitlab_url;dry_run)
+    _print_sync_planfile_help()
     main()
     scan(docs_dir;project;exclude;llm;model;output;verbose)
     fix(docs_dir;project;exclude;force;archive_dir;dry_run;llm;model;verbose)
     patch(docs_dir;project;exclude;output;llm;model)
     stats(docs_dir;exclude)
-  src/docval/validators/crossref.py:
-    e: CrossRefValidator
-    CrossRefValidator: __init__(1),_build_symbol_set(0),validate(1),_check_code_references(1),_check_import_paths(1),_check_cli_commands(1)  # Validate documentation references against actual project cod...
+    sync_planfile(docs_dir;project;exclude;export_yaml;export_todo;github_owner;github_repo;github_token;gitlab_project;gitlab_token;gitlab_url;dry_run;sprint_id;verbose)
+  src/docval/reporters/markdown_report.py:
+    e: MarkdownReporter
+    MarkdownReporter: report(2),_build_report_lines(1),_build_summary_lines(1),_build_issue_lines(1),_build_action_lines(1)  # Generate a Markdown report of validation results...
   src/docval/reporters/console.py:
     e: ConsoleReporter
     ConsoleReporter: __init__(1),report(1),_print_summary(1),_print_issues_table(1),_print_details(1),_report_plain(1)  # Print validation results to the console using rich...
@@ -67,7 +97,10 @@ D:
     LLMValidator: __init__(5),validate(2),_validate_chunk(3),_build_prompt(2),_build_context_summary(0),_parse_response(1)  # Validate documentation chunks using an LLM via litellm...
   src/docval/validators/heuristic.py:
     e: HeuristicValidator
-    HeuristicValidator: __init__(1),validate(1),_check_empty(1),_check_outdated_markers(1),_check_broken_internal_links(2),_check_todo_fixme(1),_check_archive_path(2),_check_stale_versions(1),_check_duplicates(1),_check_minimal_content(1)  # Apply fast heuristic rules to doc chunks before LLM validati...
+    HeuristicValidator: __init__(1),validate(1),_check_empty(1),_check_outdated_markers(1),_check_broken_internal_links(3),_check_todo_fixme(1),_check_archive_path(2),_check_stale_versions(1),_check_duplicates(1),_check_minimal_content(1)  # Apply fast heuristic rules to doc chunks before LLM validati...
+  src/docval/exporters/planfile.py:
+    e: PlanfileExporter
+    PlanfileExporter: __init__(4),export(3),_build_planfile(2),_extract_tickets(2),_generate_title(2),_map_priority(1),_calculate_health_score(1)  # Export validation results to planfile.yaml format...
   src/docval/reporters/json_report.py:
     e: JSONReporter
     JSONReporter: report(2)  # Generate a JSON report of validation results...
@@ -85,4 +118,5 @@ D:
   src/docval/__init__.py:
   src/docval/actions/__init__.py:
   src/docval/validators/__init__.py:
+  src/docval/exporters/__init__.py:
   src/docval/reporters/__init__.py:

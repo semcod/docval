@@ -5,21 +5,40 @@ flowchart TD
 
     subgraph Core
         src__docval__pipeline__scan["scan"]
+        src__docval__context__build_context["build_context"]
+        src__docval__context___extract_python_symbols["_extract_python_symbols"]
+        src__docval__context___collect_python_symbols["_collect_python_symbols"]
+        src__docval__context___collect_function_decorator_metadata["_collect_function_decorator_me"]
+        src__docval__context___decorator_name["_decorator_name"]
+        src__docval__cli___resolve_project_paths["_resolve_project_paths"]
+        src__docval__cli___run_scan["_run_scan"]
+        src__docval__cli___summarize_actions["_summarize_actions"]
+        src__docval__cli___print_action_counts["_print_action_counts"]
+        src__docval__cli___print_sync_planfile_help["_print_sync_planfile_help"]
         src__docval__cli__main["main"]
         src__docval__cli__scan["scan"]
         src__docval__cli__fix["fix"]
         src__docval__cli__patch["patch"]
-        src__docval__cli__stats["stats"]
-        src__docval__context__build_context["build_context"]
-        src__docval__context___extract_python_symbols{{_extract_python_symbols CC=18}}
-        src__docval__context___decorator_name["_decorator_name"]
-        src__docval__validators__llm_validator__LLMValidator__validate["validate"]
-        src__docval__validators__llm_validator__LLMValidator___validate_chunk["_validate_chunk"]
-        src__docval__validators__llm_validator__LLMValidator___build_prompt["_build_prompt"]
-        src__docval__validators__llm_validator__LLMValidator___build_context_summary["_build_context_summary"]
-        src__docval__validators__llm_validator__LLMValidator___parse_response["_parse_response"]
-        src__docval__validators__crossref__CrossRefValidator___build_symbol_set["_build_symbol_set"]
-        ...["+27 more"]
+        ...["+50 more"]
     end
 
-    class src__docval__pipeline__scan,src__docval__cli__main,src__docval__cli__scan,src__docval__cli__fix,src__docval__cli__patch,src__docval__cli__stats,src__docval__validators__llm_validator__LLMValidator__validate,src__docval__validators__llm_validator__LLMValidator___validate_chunk,src__docval__validators__llm_validator__LLMValidator___build_prompt,src__docval__validators__llm_validator__LLMValidator___build_context_summary entry
+    subgraph Exporters
+        src__docval__cli___export_todo["_export_todo"]
+        src__docval__cli___export_planfile["_export_planfile"]
+        src__docval__cli___export_github["_export_github"]
+        src__docval__cli___export_gitlab["_export_gitlab"]
+        src__docval__exporters__gitlab__GitLabExporter__export["export"]
+        src__docval__exporters__gitlab__GitLabExporter___preview_export["_preview_export"]
+        src__docval__exporters__gitlab__GitLabExporter___execute_export["_execute_export"]
+        src__docval__exporters__gitlab__GitLabExporter___generate_title["_generate_title"]
+        src__docval__exporters__gitlab__GitLabExporter___generate_description["_generate_description"]
+        src__docval__exporters__gitlab__GitLabExporter___generate_labels["_generate_labels"]
+        src__docval__exporters__planfile__PlanfileExporter__export["export"]
+        src__docval__exporters__planfile__PlanfileExporter___build_planfile["_build_planfile"]
+        src__docval__exporters__planfile__PlanfileExporter___extract_tickets["_extract_tickets"]
+        src__docval__exporters__planfile__PlanfileExporter___generate_title["_generate_title"]
+        src__docval__exporters__planfile__PlanfileExporter___map_priority["_map_priority"]
+        ...["+17 more"]
+    end
+
+    class src__docval__pipeline__scan,src__docval__cli___resolve_project_paths,src__docval__cli___run_scan,src__docval__cli___summarize_actions,src__docval__cli___print_action_counts,src__docval__cli___export_todo,src__docval__cli___export_planfile,src__docval__cli___export_github,src__docval__cli___export_gitlab,src__docval__cli___print_sync_planfile_help entry

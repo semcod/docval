@@ -137,51 +137,60 @@ class CrossRefValidator:
         if not self.ctx.cli_commands:
             return
 
-        # Look for CLI invocations in code blocks
-        cli_re = re.compile(r"```(?:bash|shell|sh)?\n(.*?)```", re.DOTALL)
-        for block_match in cli_re.finditer(chunk.content):
-            block = block_match.group(1)
-            # Extract the first word after common CLI patterns
-            for line in block.splitlines():
-                line = line.strip()
-                if not line or line.startswith("#"):
-                    continue
+        for line in self._iter_cli_code_lines(chunk.content):
+            self._check_cli_line(chunk, line)
 
-                # Check for project CLI commands
-                words = line.split()
-                if not words:
-                    continue
+    def _iter_cli_code_lines(self, content: str):
+        """Yield lines from bash-like fenced code blocks."""
+        for block_match in _CLI_CODE_BLOCK_RE.finditer(content):
+            yield from block_match.group(1).splitlines()
 
-                cmd = words[0]
-                # Check if this line contains a known CLI command
-                found = any(known_cmd in line for known_cmd in self.ctx.cli_commands)
-                if found:
-                    continue  # Line contains known command, it's OK
+    def _check_cli_line(self, chunk: DocChunk, line: str):
+        """Check one shell-like line for stale project CLI usage."""
+        line = line.strip()
+        if not line or line.startswith("#"):
+            return
 
-                # Check for common shell commands that aren't project-specific
-                common_shell_cmds = {
-                    "cd", "ls", "cat", "echo", "mkdir", "rm", "cp", "mv",
-                    "git", "python", "pip", "npm", "node", "make", "docker",
-                    "tar", "zip", "unzip", "curl", "wget", "ssh", "scp",
-                    "chmod", "chown", "find", "grep", "awk", "sed",
-                    "source", "export", "unset", "env", "set",
-                }
-                if cmd in common_shell_cmds:
-                    continue  # Common shell command, not project CLI
+        words = line.split()
+        if not words:
+            return
 
-                # Check if line looks like a project CLI invocation
-                # (first word followed by subcommand pattern)
-                if len(words) >= 2 and cmd.isalnum():
-                    potential_cli = f"{cmd} {words[1]}"
-                    # If first word matches project name or looks like a CLI tool
-                    if any(cmd == known or potential_cli.startswith(known)
-                           for known in self.ctx.cli_commands):
-                        chunk.add_issue(
-                            "cli_command",
-                            Severity.WARNING,
-                            f"CLI command '{potential_cli}' may be outdated or incorrect",
-                            suggestion=f"Verify: project CLI commands are: {', '.join(self.ctx.cli_commands[:5])}",
-                        )
+        cmd = words[0]
+        if self._line_contains_known_cli(line) or self._is_common_shell_command(cmd):
+            return
+
+        potential_cli = self._potential_cli_invocation(cmd, words)
+        if not potential_cli:
+            return
+
+        if self._matches_known_cli(cmd, potential_cli):
+            chunk.add_issue(
+                "cli_command",
+                Severity.WARNING,
+                f"CLI command '{potential_cli}' may be outdated or incorrect",
+                suggestion=f"Verify: project CLI commands are: {', '.join(self.ctx.cli_commands[:5])}",
+            )
+
+    def _line_contains_known_cli(self, line: str) -> bool:
+        """Return True when a line already references a known CLI command."""
+        return any(known_cmd in line for known_cmd in self.ctx.cli_commands)
+
+    def _is_common_shell_command(self, cmd: str) -> bool:
+        """Return True for shell commands that should not be treated as project CLIs."""
+        return cmd in _COMMON_SHELL_COMMANDS
+
+    def _potential_cli_invocation(self, cmd: str, words: list[str]) -> str:
+        """Build a candidate CLI invocation from a shell line."""
+        if len(words) < 2 or not cmd.isalnum():
+            return ""
+        return f"{cmd} {words[1]}"
+
+    def _matches_known_cli(self, cmd: str, potential_cli: str) -> bool:
+        """Return True when the candidate looks like a project CLI invocation."""
+        return any(
+            cmd == known or potential_cli.startswith(known)
+            for known in self.ctx.cli_commands
+        )
 
 
 # Common backtick-quoted terms that aren't code references
@@ -193,4 +202,16 @@ _COMMON_NON_CODE = {
     "bash", "shell", "python", "node", "npm", "pip",
     "readme", "changelog", "license", "todo", "fixme",
     "example", "default", "config", "settings", "env",
+}
+
+
+_CLI_CODE_BLOCK_RE = re.compile(r"```(?:bash|shell|sh)?\n(.*?)```", re.DOTALL)
+
+
+_COMMON_SHELL_COMMANDS = {
+    "cd", "ls", "cat", "echo", "mkdir", "rm", "cp", "mv",
+    "git", "python", "pip", "npm", "node", "make", "docker",
+    "tar", "zip", "unzip", "curl", "wget", "ssh", "scp",
+    "chmod", "chown", "find", "grep", "awk", "sed",
+    "source", "export", "unset", "env", "set",
 }

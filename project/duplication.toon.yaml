@@ -1,9 +1,41 @@
-# redup/duplication | 0 groups | 16f 1972L | 2026-04-13
+# redup/duplication | 4 groups | 21f 3285L | 2026-04-14
 
 SUMMARY:
-  files_scanned: 16
-  total_lines:   1972
-  dup_groups:    0
-  dup_fragments: 0
-  saved_lines:   0
-  scan_ms:       2824
+  files_scanned: 21
+  total_lines:   3285
+  dup_groups:    4
+  dup_fragments: 8
+  saved_lines:   86
+  scan_ms:       4102
+
+DUPLICATES[4] (ranked by impact):
+  [f0ba510fa0d985e4]   STRU  _generate_labels  L=27 N=2 saved=27 sim=1.00
+      src/docval/exporters/github.py:210-236  (_generate_labels)
+      src/docval/exporters/gitlab.py:193-219  (_generate_labels)
+  [23689beef14f269b]   EXAC  _preview_export  L=26 N=2 saved=26 sim=1.00
+      src/docval/exporters/github.py:64-89  (_preview_export)
+      src/docval/exporters/gitlab.py:42-67  (_preview_export)
+  [d97e6fb63577e06f]   EXAC  _generate_title  L=19 N=2 saved=19 sim=1.00
+      src/docval/exporters/github.py:158-176  (_generate_title)
+      src/docval/exporters/gitlab.py:141-159  (_generate_title)
+  [3955c8ed759cb7d1]   EXAC  export  L=14 N=2 saved=14 sim=1.00
+      src/docval/exporters/github.py:49-62  (export)
+      src/docval/exporters/gitlab.py:27-40  (export)
+
+REFACTOR[4] (ranked by priority):
+  [1] ○ extract_function   → src/docval/exporters/utils/_generate_labels.py
+      WHY: 2 occurrences of 27-line block across 2 files — saves 27 lines
+      FILES: src/docval/exporters/github.py, src/docval/exporters/gitlab.py
+  [2] ○ extract_function   → src/docval/exporters/utils/_preview_export.py
+      WHY: 2 occurrences of 26-line block across 2 files — saves 26 lines
+      FILES: src/docval/exporters/github.py, src/docval/exporters/gitlab.py
+  [3] ○ extract_function   → src/docval/exporters/utils/_generate_title.py
+      WHY: 2 occurrences of 19-line block across 2 files — saves 19 lines
+      FILES: src/docval/exporters/github.py, src/docval/exporters/gitlab.py
+  [4] ○ extract_function   → src/docval/exporters/utils/export.py
+      WHY: 2 occurrences of 14-line block across 2 files — saves 14 lines
+      FILES: src/docval/exporters/github.py, src/docval/exporters/gitlab.py
+
+METRICS-TARGET:
+  dup_groups:  4 → 0
+  saved_lines: 86 lines recoverable
