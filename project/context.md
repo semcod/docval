@@ -6,10 +6,10 @@
 - **Primary Language**: python
 - **Languages**: python: 21, shell: 1
 - **Analysis Mode**: static
-- **Total Functions**: 117
+- **Total Functions**: 120
 - **Total Classes**: 22
 - **Modules**: 22
-- **Entry Points**: 92
+- **Entry Points**: 95
 
 ## Architecture by Module
 
@@ -41,6 +41,11 @@
 - **Classes**: 3
 - **File**: `executor.py`
 
+### src.docval.validators.llm_validator
+- **Functions**: 9
+- **Classes**: 1
+- **File**: `llm_validator.py`
+
 ### src.docval.exporters.todo
 - **Functions**: 8
 - **Classes**: 2
@@ -55,11 +60,6 @@
 - **Functions**: 7
 - **Classes**: 1
 - **File**: `planfile.py`
-
-### src.docval.validators.llm_validator
-- **Functions**: 6
-- **Classes**: 1
-- **File**: `llm_validator.py`
 
 ### src.docval.reporters.console
 - **Functions**: 6
@@ -171,6 +171,10 @@ Examples:
 > Check Python import statements in code blocks.
 - **Calls**: re.compile, re.compile, code_block_re.finditer, block_match.group, import_re.finditer, any, imp_match.group, imp_match.group
 
+### src.docval.validators.llm_validator.LLMValidator._validate_batch
+> Validate multiple chunks in a single LLM call. Returns number validated.
+- **Calls**: self._build_batch_prompt, completion_fn, self._parse_batch_response, zip, _STATUS_MAP.get, _ACTION_MAP.get, float, result.get
+
 ### src.docval.validators.llm_validator.LLMValidator._validate_chunk
 > Validate a single chunk via LLM. Returns True if successful.
 - **Calls**: self._build_prompt, completion_fn, self._parse_response, _STATUS_MAP.get, _ACTION_MAP.get, float, parsed.get, parsed.get
@@ -202,6 +206,14 @@ Examples:
 > Generate labels for the issue.
 - **Calls**: any, list, labels.append, any, set, labels.append, labels.append, labels.append
 
+### src.docval.validators.llm_validator.LLMValidator._parse_batch_response
+> Parse JSON array from LLM batch response.
+- **Calls**: re.sub, re.sub, text.strip, text.strip, json.loads, isinstance, len, len
+
+### src.docval.validators.heuristic.HeuristicValidator._check_duplicates
+> Detect near-duplicate content using hash-based O(1) lookup.
+- **Calls**: re.sub, hash, None.strip, None.ratio, chunk.add_issue, chunk.content.lower, SequenceMatcher, re.sub
+
 ### src.docval.validators.crossref.CrossRefValidator._check_code_references
 > Check inline code references like `ClassName` or `function_name`.
 - **Calls**: re.findall, ref.lower, ref_lower.split, any, orphaned_refs.append, chunk.add_issue, len, len
@@ -217,13 +229,17 @@ Examples:
 ### src.docval.reporters.markdown_report.MarkdownReporter._build_issue_lines
 - **Calls**: lines.extend, lines.append, lines.append, lines.append, any, _STATUS_EMOJIS.get, _ACTION_LABELS.get, lines.append
 
+### src.docval.validators.llm_validator.LLMValidator.validate
+> Validate chunks via LLM. Returns number of chunks validated.
+
+Args:
+    doc_files: Files to validate
+    only_uncertain: If True, skip chunks already 
+- **Calls**: self._build_context_summary, range, len, ImportError, chunks_to_validate.append, len, self._validate_chunk, self._validate_batch
+
 ### src.docval.validators.heuristic.HeuristicValidator.validate
 > Run all heuristic checks across all files.
-- **Calls**: self._seen_chunks.clear, self._check_empty, self._check_outdated_markers, self._check_broken_internal_links, self._check_todo_fixme, self._check_archive_path, self._check_stale_versions, self._check_duplicates
-
-### src.docval.validators.heuristic.HeuristicValidator._check_duplicates
-> Detect near-duplicate content across chunks using SequenceMatcher.
-- **Calls**: re.sub, self._seen_chunks.append, None.strip, None.quick_ratio, None.ratio, chunk.content.lower, SequenceMatcher, chunk.add_issue
+- **Calls**: self._seen_hashes.clear, self._check_empty, self._check_outdated_markers, self._check_broken_internal_links, self._check_todo_fixme, self._check_archive_path, self._check_stale_versions, self._check_duplicates
 
 ### src.docval.validators.crossref.CrossRefValidator._check_cli_line
 > Check one shell-like line for stale project CLI usage.
@@ -232,17 +248,6 @@ Examples:
 ### src.docval.exporters.planfile.PlanfileExporter._build_planfile
 > Build planfile dictionary structure.
 - **Calls**: self._extract_tickets, self.generated_at.strftime, self.generated_at.strftime, sum, self._calculate_health_score, self.generated_at.isoformat, bool, issues_by_type.get
-
-### src.docval.models.ValidationResult.update_counts
-- **Calls**: len, sum, self._count, self._count, self._count, self._count, self._count, self._count
-
-### src.docval.validators.llm_validator.LLMValidator._parse_response
-> Parse JSON from LLM response, handling markdown fences.
-- **Calls**: re.sub, re.sub, re.search, text.strip, text.strip, json.loads, json.loads, match.group
-
-### src.docval.exporters.todo.TodoExporter._extract_tasks
-> Extract tasks from validation result.
-- **Calls**: tasks.sort, self._determine_priority, TodoTask, tasks.append, self.PRIORITY_ORDER.get, self._generate_title, str, self._generate_labels
 
 ## Process Flows
 
@@ -330,6 +335,11 @@ _check_import_paths [src.docval.validators.crossref.CrossRefValidator]
 - **Methods**: 10
 - **Key Methods**: src.docval.actions.executor.ActionExecutor.__init__, src.docval.actions.executor.ActionExecutor.execute, src.docval.actions.executor.ActionExecutor._collect_actions, src.docval.actions.executor.ActionExecutor._should_archive_file, src.docval.actions.executor.ActionExecutor._record_chunk_action, src.docval.actions.executor.ActionExecutor._apply_deletions, src.docval.actions.executor.ActionExecutor._apply_archives, src.docval.actions.executor.ActionExecutor._delete_sections, src.docval.actions.executor.ActionExecutor._archive_file, src.docval.actions.executor.ActionExecutor.generate_patch
 
+### src.docval.validators.llm_validator.LLMValidator
+> Validate documentation chunks using an LLM via litellm.
+- **Methods**: 9
+- **Key Methods**: src.docval.validators.llm_validator.LLMValidator.__init__, src.docval.validators.llm_validator.LLMValidator.validate, src.docval.validators.llm_validator.LLMValidator._validate_batch, src.docval.validators.llm_validator.LLMValidator._validate_chunk, src.docval.validators.llm_validator.LLMValidator._build_batch_prompt, src.docval.validators.llm_validator.LLMValidator._build_prompt, src.docval.validators.llm_validator.LLMValidator._build_context_summary, src.docval.validators.llm_validator.LLMValidator._parse_batch_response, src.docval.validators.llm_validator.LLMValidator._parse_response
+
 ### src.docval.exporters.todo.TodoExporter
 > Export validation results to TODO.md format.
 - **Methods**: 8
@@ -344,11 +354,6 @@ _check_import_paths [src.docval.validators.crossref.CrossRefValidator]
 > Export validation results to planfile.yaml format.
 - **Methods**: 7
 - **Key Methods**: src.docval.exporters.planfile.PlanfileExporter.__init__, src.docval.exporters.planfile.PlanfileExporter.export, src.docval.exporters.planfile.PlanfileExporter._build_planfile, src.docval.exporters.planfile.PlanfileExporter._extract_tickets, src.docval.exporters.planfile.PlanfileExporter._generate_title, src.docval.exporters.planfile.PlanfileExporter._map_priority, src.docval.exporters.planfile.PlanfileExporter._calculate_health_score
-
-### src.docval.validators.llm_validator.LLMValidator
-> Validate documentation chunks using an LLM via litellm.
-- **Methods**: 6
-- **Key Methods**: src.docval.validators.llm_validator.LLMValidator.__init__, src.docval.validators.llm_validator.LLMValidator.validate, src.docval.validators.llm_validator.LLMValidator._validate_chunk, src.docval.validators.llm_validator.LLMValidator._build_prompt, src.docval.validators.llm_validator.LLMValidator._build_context_summary, src.docval.validators.llm_validator.LLMValidator._parse_response
 
 ### src.docval.reporters.console.ConsoleReporter
 > Print validation results to the console using rich.
@@ -421,11 +426,19 @@ Key functions that process and transform data:
 
 Args:
     doc_files: Files to validate
-- **Output to**: self._build_context_summary, ImportError, self._validate_chunk, time.sleep
+- **Output to**: self._build_context_summary, range, len, ImportError, chunks_to_validate.append
+
+### src.docval.validators.llm_validator.LLMValidator._validate_batch
+> Validate multiple chunks in a single LLM call. Returns number validated.
+- **Output to**: self._build_batch_prompt, completion_fn, self._parse_batch_response, zip, _STATUS_MAP.get
 
 ### src.docval.validators.llm_validator.LLMValidator._validate_chunk
 > Validate a single chunk via LLM. Returns True if successful.
 - **Output to**: self._build_prompt, completion_fn, self._parse_response, _STATUS_MAP.get, _ACTION_MAP.get
+
+### src.docval.validators.llm_validator.LLMValidator._parse_batch_response
+> Parse JSON array from LLM batch response.
+- **Output to**: re.sub, re.sub, text.strip, text.strip, json.loads
 
 ### src.docval.validators.llm_validator.LLMValidator._parse_response
 > Parse JSON from LLM response, handling markdown fences.
@@ -433,7 +446,7 @@ Args:
 
 ### src.docval.validators.heuristic.HeuristicValidator.validate
 > Run all heuristic checks across all files.
-- **Output to**: self._seen_chunks.clear, self._check_empty, self._check_outdated_markers, self._check_broken_internal_links, self._check_todo_fixme
+- **Output to**: self._seen_hashes.clear, self._check_empty, self._check_outdated_markers, self._check_broken_internal_links, self._check_todo_fixme
 
 ### src.docval.validators.crossref.CrossRefValidator.validate
 > Check each chunk for references to code symbols.
@@ -463,13 +476,13 @@ Functions exposed as public API (no underscore prefix):
 - `src.docval.cli.patch` - 19 calls
 - `src.docval.exporters.github.GitHubExporter.sync_from_planfile` - 17 calls
 - `src.docval.actions.executor.ActionExecutor.generate_patch` - 17 calls
+- `src.docval.validators.llm_validator.LLMValidator.validate` - 9 calls
 - `src.docval.validators.heuristic.HeuristicValidator.validate` - 9 calls
 - `src.docval.models.ValidationResult.update_counts` - 9 calls
 - `src.docval.context.build_context` - 8 calls
 - `src.docval.chunker.discover_md_files` - 7 calls
 - `src.docval.reporters.json_report.JSONReporter.report` - 7 calls
 - `src.docval.reporters.console.ConsoleReporter.report` - 5 calls
-- `src.docval.validators.llm_validator.LLMValidator.validate` - 4 calls
 - `src.docval.reporters.markdown_report.MarkdownReporter.report` - 4 calls
 - `src.docval.actions.executor.ActionExecutor.execute` - 4 calls
 - `src.docval.validators.crossref.CrossRefValidator.validate` - 3 calls

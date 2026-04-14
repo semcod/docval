@@ -1,7 +1,7 @@
 <!-- code2docs:start --># docval
 
-![version](https://img.shields.io/badge/version-0.1.0-blue) ![python](https://img.shields.io/badge/python-%3E%3D3.10-blue) ![coverage](https://img.shields.io/badge/coverage-unknown-lightgrey) ![functions](https://img.shields.io/badge/functions-117-green)
-> **117** functions | **22** classes | **22** files | CC̄ = 4.9
+![version](https://img.shields.io/badge/version-0.1.0-blue) ![python](https://img.shields.io/badge/python-%3E%3D3.10-blue) ![coverage](https://img.shields.io/badge/coverage-unknown-lightgrey) ![functions](https://img.shields.io/badge/functions-120-green)
+> **120** functions | **22** classes | **22** files | CC̄ = 4.9
 
 > Auto-generated project documentation from source code analysis.
 
@@ -148,7 +148,7 @@ Content outside the markers is preserved when regenerating. Enable this with `sy
 
 ```
 docval/
-├── project    ├── docval/        ├── chunker        ├── pipeline        ├── actions/        ├── cli        ├── context        ├── validators/            ├── llm_validator            ├── heuristic        ├── exporters/            ├── crossref            ├── gitlab            ├── planfile            ├── github        ├── reporters/            ├── markdown_report            ├── todo            ├── json_report            ├── console        ├── models            ├── executor```
+├── project        ├── chunker    ├── docval/        ├── pipeline        ├── actions/        ├── context            ├── llm_validator        ├── validators/        ├── cli            ├── heuristic            ├── crossref        ├── exporters/            ├── gitlab            ├── planfile            ├── github        ├── reporters/            ├── markdown_report            ├── json_report            ├── todo            ├── console        ├── models            ├── executor```
 
 ## API Overview
 
@@ -161,9 +161,9 @@ docval/
 - **`PlanfileExporter`** — Export validation results to planfile.yaml format.
 - **`GitHubExporter`** — Export validation results to GitHub Issues.
 - **`MarkdownReporter`** — Generate a Markdown report of validation results.
+- **`JSONReporter`** — Generate a JSON report of validation results.
 - **`TodoTask`** — A single task for the TODO list.
 - **`TodoExporter`** — Export validation results to TODO.md format.
-- **`JSONReporter`** — Generate a JSON report of validation results.
 - **`ConsoleReporter`** — Print validation results to the console using rich.
 - **`ChunkStatus`** — —
 - **`ActionType`** — —
@@ -182,13 +182,13 @@ docval/
 - `discover_md_files(docs_dir, exclude_patterns)` — Recursively find all .md files, excluding node_modules, .git, etc.
 - `chunk_directory(docs_dir, exclude_patterns)` — Chunk all Markdown files in a directory.
 - `scan(docs_dir, project_root, exclude, use_llm)` — Run the full validation pipeline.
+- `build_context(project_root, max_depth)` — Gather project context for cross-referencing with documentation.
 - `main()` — Validate and refactor Markdown documentation against source code.
 - `scan(docs_dir, project, exclude, llm)` — Scan documentation and report issues.
 - `fix(docs_dir, project, exclude, force)` — Validate and apply fixes to documentation.
 - `patch(docs_dir, project, exclude, output)` — Generate a patch file with recommended changes.
 - `stats(docs_dir, exclude)` — Show documentation statistics (no validation).
 - `sync_planfile(docs_dir, project, exclude, export_yaml)` — Sync docval results to planfile, GitHub, or GitLab.
-- `build_context(project_root, max_depth)` — Gather project context for cross-referencing with documentation.
 
 
 ## Project Structure
@@ -214,7 +214,7 @@ docval/
 📦 `src.docval.validators`
 📄 `src.docval.validators.crossref` (12 functions, 1 classes)
 📄 `src.docval.validators.heuristic` (10 functions, 1 classes)
-📄 `src.docval.validators.llm_validator` (6 functions, 1 classes)
+📄 `src.docval.validators.llm_validator` (9 functions, 1 classes)
 
 ## Requirements
 

@@ -82,7 +82,7 @@ def scan(
             print(f"Running LLM validation with {llm_model}...")
 
         from .validators.llm_validator import LLMValidator
-        llm = LLMValidator(model=llm_model, ctx=ctx)
+        llm = LLMValidator(model=llm_model, ctx=ctx, llm_error_threshold=0.7)
         validated = llm.validate(doc_files, only_uncertain=True)
 
         if verbose:

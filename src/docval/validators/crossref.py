@@ -18,12 +18,22 @@ from ..models import (
 )
 
 
+# Cache for symbol sets across validator instances
+_symbol_cache: dict[str, set[str]] = {}
+
+
 class CrossRefValidator:
     """Validate documentation references against actual project code."""
 
     def __init__(self, ctx: ProjectContext):
         self.ctx = ctx
-        self._known_symbols = self._build_symbol_set()
+        # Use cache key based on context hash to avoid rebuilding symbol sets
+        cache_key = f"{ctx.root}:{len(ctx.classes)}:{len(ctx.functions)}"
+        if cache_key in _symbol_cache:
+            self._known_symbols = _symbol_cache[cache_key]
+        else:
+            self._known_symbols = self._build_symbol_set()
+            _symbol_cache[cache_key] = self._known_symbols
 
     def _build_symbol_set(self) -> set[str]:
         """Build a set of all known code symbols (lowercase for matching)."""

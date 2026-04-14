@@ -2,11 +2,27 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
 import click
 
 from .models import ActionType
+
+
+def _load_env():
+    """Load .env file if present in current directory or project root."""
+    try:
+        from dotenv import load_dotenv
+        # Try current directory first, then parent directories
+        cwd = Path.cwd()
+        for path in [cwd, *cwd.parents]:
+            env_file = path / ".env"
+            if env_file.exists():
+                load_dotenv(env_file)
+                break
+    except ImportError:
+        pass  # dotenv not available, skip silently
 
 
 def _resolve_project_paths(docs_dir: Path, project: Path | None) -> tuple[Path, Path]:
@@ -159,6 +175,7 @@ def _print_sync_planfile_help():
 @click.version_option(package_name="docval")
 def main():
     """Validate and refactor Markdown documentation against source code."""
+    _load_env()
 
 
 @main.command()

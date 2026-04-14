@@ -1,8 +1,8 @@
-# docval | 22f 3320L | shell:1,python:21 | 2026-04-14
-# stats: 117 func | 0 cls | 22 mod | CC̄=4.9 | critical:0 | cycles:0
+# docval | 22f 3466L | shell:1,python:21 | 2026-04-14
+# stats: 120 func | 0 cls | 22 mod | CC̄=4.9 | critical:0 | cycles:0
 # alerts[5]: fan-out chunk_file=16; fan-out fix=16; fan-out scan=15; fan-out _extract_dependencies=13; fan-out _parse_toon_files=13
 # hotspots[5]: chunk_file fan=16; fix fan=16; scan fan=15; _extract_dependencies fan=13; _parse_toon_files fan=13
-# evolution: CC̄ 6.1→4.9 (improved -1.2)
+# evolution: CC̄ 4.9→4.9 (flat 0.0)
 # Keys: M=modules, D=details, i=imports, e=exports, c=classes, f=functions, m=methods
 M[22]:
   project.sh,35
@@ -24,9 +24,9 @@ M[22]:
   src/docval/reporters/json_report.py,66
   src/docval/reporters/markdown_report.py,117
   src/docval/validators/__init__.py,6
-  src/docval/validators/crossref.py,217
-  src/docval/validators/heuristic.py,224
-  src/docval/validators/llm_validator.py,249
+  src/docval/validators/crossref.py,227
+  src/docval/validators/heuristic.py,226
+  src/docval/validators/llm_validator.py,383
 D:
   src/docval/chunker.py:
     e: chunk_file,discover_md_files,chunk_directory
@@ -51,6 +51,9 @@ D:
     _parse_toon_files(ctx;root)
     _collect_git_info(ctx;root)
     _build_dir_tree(ctx;root;max_depth)
+  src/docval/validators/llm_validator.py:
+    e: LLMValidator
+    LLMValidator: __init__(5),validate(3),_validate_batch(3),_validate_chunk(3),_build_batch_prompt(2),_build_prompt(2),_build_context_summary(0),_parse_batch_response(2),_parse_response(1)  # Validate documentation chunks using an LLM via litellm...
   src/docval/actions/executor.py:
     e: ActionResult,_ActionPlan,ActionExecutor
     ActionResult:  # Summary of executed actions...
@@ -92,9 +95,6 @@ D:
   src/docval/reporters/console.py:
     e: ConsoleReporter
     ConsoleReporter: __init__(1),report(1),_print_summary(1),_print_issues_table(1),_print_details(1),_report_plain(1)  # Print validation results to the console using rich...
-  src/docval/validators/llm_validator.py:
-    e: LLMValidator
-    LLMValidator: __init__(5),validate(2),_validate_chunk(3),_build_prompt(2),_build_context_summary(0),_parse_response(1)  # Validate documentation chunks using an LLM via litellm...
   src/docval/validators/heuristic.py:
     e: HeuristicValidator
     HeuristicValidator: __init__(1),validate(1),_check_empty(1),_check_outdated_markers(1),_check_broken_internal_links(3),_check_todo_fixme(1),_check_archive_path(2),_check_stale_versions(1),_check_duplicates(1),_check_minimal_content(1)  # Apply fast heuristic rules to doc chunks before LLM validati...

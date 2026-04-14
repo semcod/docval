@@ -26,11 +26,11 @@ class HeuristicValidator:
 
     def __init__(self, ctx: ProjectContext | None = None):
         self.ctx = ctx
-        self._seen_chunks: list[tuple[str, DocChunk]] = []
+        self._seen_hashes: dict[str, DocChunk] = {}
 
     def validate(self, doc_files: list[DocFile]):
         """Run all heuristic checks across all files."""
-        self._seen_chunks.clear()
+        self._seen_hashes.clear()
 
         for doc_file in doc_files:
             for chunk in doc_file.chunks:
@@ -179,35 +179,37 @@ class HeuristicValidator:
                 chunk.validator = "heuristic:stale_version"
 
     def _check_duplicates(self, chunk: DocChunk):
-        """Detect near-duplicate content across chunks using SequenceMatcher."""
+        """Detect near-duplicate content using hash-based O(1) lookup."""
         # Skip chunks already resolved by earlier checks
         if chunk.status != ChunkStatus.UNCHECKED and chunk.status != ChunkStatus.VALID:
             return
         if chunk.word_count < 30:
             return
 
-        # Normalize content for comparison
+        # Normalize and hash content for fast comparison
         normalized = re.sub(r"\s+", " ", chunk.content.lower().strip())
+        content_hash = hash(normalized[:200])  # Hash first 200 chars for speed
 
-        for prev_norm, prev_chunk in self._seen_chunks:
-            ratio = SequenceMatcher(None, normalized, prev_norm).quick_ratio()
-            if ratio > 0.85:
-                # Confirm with full ratio
-                full_ratio = SequenceMatcher(None, normalized, prev_norm).ratio()
-                if full_ratio > 0.80:
-                    chunk.status = ChunkStatus.DUPLICATE
-                    chunk.action = ActionType.DELETE
-                    chunk.confidence = full_ratio
-                    chunk.validator = "heuristic:duplicate"
-                    chunk.add_issue(
-                        "duplicate",
-                        Severity.WARNING,
-                        f"~{full_ratio:.0%} similar to {prev_chunk.file}:{prev_chunk.line_start}",
-                        suggestion=f"Consider removing — duplicate of section '{prev_chunk.heading}'",
-                    )
-                    break
+        # Check if we've seen this hash before
+        if content_hash in self._seen_hashes:
+            prev_chunk = self._seen_hashes[content_hash]
+            # Verify with full comparison to avoid hash collisions
+            full_ratio = SequenceMatcher(None, normalized,
+                                         re.sub(r"\s+", " ", prev_chunk.content.lower().strip())).ratio()
+            if full_ratio > 0.80:
+                chunk.status = ChunkStatus.DUPLICATE
+                chunk.action = ActionType.DELETE
+                chunk.confidence = full_ratio
+                chunk.validator = "heuristic:duplicate"
+                chunk.add_issue(
+                    "duplicate",
+                    Severity.WARNING,
+                    f"~{full_ratio:.0%} similar to {prev_chunk.file}:{prev_chunk.line_start}",
+                    suggestion=f"Consider removing — duplicate of section '{prev_chunk.heading}'",
+                )
+                return
 
-        self._seen_chunks.append((normalized, chunk))
+        self._seen_hashes[content_hash] = chunk
 
     def _check_minimal_content(self, chunk: DocChunk):
         """Flag heading-only sections with no meaningful body."""

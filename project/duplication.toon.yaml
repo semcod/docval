@@ -1,12 +1,12 @@
-# redup/duplication | 4 groups | 21f 3285L | 2026-04-14
+# redup/duplication | 4 groups | 21f 3431L | 2026-04-14
 
 SUMMARY:
   files_scanned: 21
-  total_lines:   3285
+  total_lines:   3431
   dup_groups:    4
   dup_fragments: 8
   saved_lines:   86
-  scan_ms:       4102
+  scan_ms:       3937
 
 DUPLICATES[4] (ranked by impact):
   [f0ba510fa0d985e4]   STRU  _generate_labels  L=27 N=2 saved=27 sim=1.00

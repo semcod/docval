@@ -1,9 +1,9 @@
-# docval | 117 func | 16f | 3909L | python | 2026-04-14
+# docval | 120 func | 16f | 4055L | python | 2026-04-14
 
 HEALTH:
-  CC̄=4.9  critical=14 (limit:10)  dup=0  cycles=1
+  CC̄=4.9  critical=16 (limit:10)  dup=0  cycles=1
 
-ALERTS[16]:
+ALERTS[17]:
   !!  high_fan_out     chunk_file = 16 (limit:10)
   !!  high_fan_out     fix = 16 (limit:10)
   !!  high_fan_out     scan = 15 (limit:10)
@@ -17,14 +17,14 @@ ALERTS[16]:
 
 MODULES[22] (top by size):
   M[src/docval/cli.py] 452L C:0 F:15 CC↑10 D:0 (python)
+  M[src/docval/validators/llm_validator.py] 383L C:1 F:9 CC↑12 D:0 (python)
   M[src/docval/exporters/github.py] 289L C:1 F:10 CC↑11 D:0 (python)
   M[src/docval/context.py] 256L C:0 F:13 CC↑12 D:1 (python)
   M[src/docval/exporters/todo.py] 251L C:2 F:8 CC↑11 D:0 (python)
-  M[src/docval/validators/llm_validator.py] 249L C:1 F:6 CC↑9 D:0 (python)
-  M[src/docval/validators/heuristic.py] 224L C:1 F:10 CC↑9 D:0 (python)
+  M[src/docval/validators/crossref.py] 227L C:1 F:12 CC↑11 D:0 (python)
+  M[src/docval/validators/heuristic.py] 226L C:1 F:10 CC↑9 D:0 (python)
   M[src/docval/exporters/planfile.py] 223L C:1 F:7 CC↑9 D:0 (python)
   M[src/docval/exporters/gitlab.py] 219L C:1 F:7 CC↑11 D:0 (python)
-  M[src/docval/validators/crossref.py] 217L C:1 F:12 CC↑11 D:0 (python)
   M[src/docval/actions/executor.py] 176L C:3 F:10 CC↑12 D:0 (python)
   M[src/docval/reporters/console.py] 165L C:1 F:6 CC↑10 D:0 (python)
   M[src/docval/models.py] 148L C:8 F:3 CC↑4 D:0 (python)
@@ -54,4 +54,4 @@ REFACTOR[4]:
   [4] M/M Reduce scan fan-out (currently 15)
 
 EVOLUTION:
-  2026-04-14 CC̄=4.9 crit=14 3909L // Automated analysis
+  2026-04-14 CC̄=4.9 crit=16 4055L // Automated analysis
