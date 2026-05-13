@@ -5,7 +5,6 @@ from __future__ import annotations
 import enum
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Optional
 
 
 class ChunkStatus(str, enum.Enum):
@@ -13,7 +12,7 @@ class ChunkStatus(str, enum.Enum):
     OUTDATED = "outdated"
     INVALID = "invalid"
     DUPLICATE = "duplicate"
-    ORPHANED = "orphaned"       # references non-existent code
+    ORPHANED = "orphaned"  # references non-existent code
     EMPTY = "empty"
     UNCHECKED = "unchecked"
 
@@ -22,8 +21,8 @@ class ActionType(str, enum.Enum):
     KEEP = "keep"
     DELETE = "delete"
     ARCHIVE = "archive"
-    FIX = "fix"                 # LLM-assisted rewrite
-    FLAG = "flag"               # needs manual review
+    FIX = "fix"  # LLM-assisted rewrite
+    FLAG = "flag"  # needs manual review
 
 
 class Severity(str, enum.Enum):
@@ -36,6 +35,7 @@ class Severity(str, enum.Enum):
 @dataclass
 class Issue:
     """A single validation issue found in a doc chunk."""
+
     rule: str
     severity: Severity
     message: str
@@ -45,17 +45,18 @@ class Issue:
 @dataclass
 class DocChunk:
     """A semantic chunk extracted from a Markdown file."""
+
     file: Path
-    heading: str                # section heading (empty for preamble)
-    heading_level: int          # 0 = preamble, 1-6 = H1-H6
-    content: str                # full text of the section
+    heading: str  # section heading (empty for preamble)
+    heading_level: int  # 0 = preamble, 1-6 = H1-H6
+    content: str  # full text of the section
     line_start: int
     line_end: int
     status: ChunkStatus = ChunkStatus.UNCHECKED
     issues: list[Issue] = field(default_factory=list)
     action: ActionType = ActionType.KEEP
-    confidence: float = 0.0     # 0.0-1.0
-    validator: str = ""         # which validator set the status
+    confidence: float = 0.0  # 0.0-1.0
+    validator: str = ""  # which validator set the status
 
     @property
     def char_count(self) -> int:
@@ -70,12 +71,15 @@ class DocChunk:
         return str(self.file)
 
     def add_issue(self, rule: str, severity: Severity, message: str, suggestion: str = ""):
-        self.issues.append(Issue(rule=rule, severity=severity, message=message, suggestion=suggestion))
+        self.issues.append(
+            Issue(rule=rule, severity=severity, message=message, suggestion=suggestion)
+        )
 
 
 @dataclass
 class DocFile:
     """Represents a single Markdown file with its chunks."""
+
     path: Path
     relative_path: str
     chunks: list[DocChunk] = field(default_factory=list)
@@ -91,8 +95,12 @@ class DocFile:
     @property
     def worst_status(self) -> ChunkStatus:
         priority = [
-            ChunkStatus.INVALID, ChunkStatus.ORPHANED, ChunkStatus.OUTDATED,
-            ChunkStatus.DUPLICATE, ChunkStatus.EMPTY, ChunkStatus.UNCHECKED,
+            ChunkStatus.INVALID,
+            ChunkStatus.ORPHANED,
+            ChunkStatus.OUTDATED,
+            ChunkStatus.DUPLICATE,
+            ChunkStatus.EMPTY,
+            ChunkStatus.UNCHECKED,
             ChunkStatus.VALID,
         ]
         statuses = {c.status for c in self.chunks}
@@ -105,6 +113,7 @@ class DocFile:
 @dataclass
 class ProjectContext:
     """Gathered context about the project for cross-referencing."""
+
     root: Path
     src_files: list[str] = field(default_factory=list)
     classes: list[str] = field(default_factory=list)
@@ -122,6 +131,7 @@ class ProjectContext:
 @dataclass
 class ValidationResult:
     """Aggregated result of a validation run."""
+
     files_scanned: int = 0
     chunks_total: int = 0
     chunks_valid: int = 0
@@ -143,6 +153,4 @@ class ValidationResult:
         self.chunks_empty = self._count(ChunkStatus.EMPTY)
 
     def _count(self, status: ChunkStatus) -> int:
-        return sum(
-            1 for f in self.doc_files for c in f.chunks if c.status == status
-        )
+        return sum(1 for f in self.doc_files for c in f.chunks if c.status == status)

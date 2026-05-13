@@ -1,7 +1,7 @@
-# docval | 120 func | 16f | 4055L | python | 2026-04-14
+# docval | 121 func | 16f | 4106L | python | 2026-04-15
 
 HEALTH:
-  CC̄=4.9  critical=16 (limit:10)  dup=0  cycles=1
+  CC̄=5.0  critical=17 (limit:10)  dup=0  cycles=1
 
 ALERTS[17]:
   !!  high_fan_out     chunk_file = 16 (limit:10)
@@ -16,8 +16,8 @@ ALERTS[17]:
   !   high_fan_out     CrossRefValidator._check_import_paths = 11 (limit:10)
 
 MODULES[22] (top by size):
-  M[src/docval/cli.py] 452L C:0 F:15 CC↑10 D:0 (python)
-  M[src/docval/validators/llm_validator.py] 383L C:1 F:9 CC↑12 D:0 (python)
+  M[src/docval/cli.py] 469L C:0 F:16 CC↑10 D:0 (python)
+  M[src/docval/validators/llm_validator.py] 417L C:1 F:9 CC↑13 D:0 (python)
   M[src/docval/exporters/github.py] 289L C:1 F:10 CC↑11 D:0 (python)
   M[src/docval/context.py] 256L C:0 F:13 CC↑12 D:1 (python)
   M[src/docval/exporters/todo.py] 251L C:2 F:8 CC↑11 D:0 (python)
@@ -54,4 +54,4 @@ REFACTOR[4]:
   [4] M/M Reduce scan fan-out (currently 15)
 
 EVOLUTION:
-  2026-04-14 CC̄=4.9 crit=16 4055L // Automated analysis
+  2026-04-15 CC̄=5.0 crit=17 4106L // Automated analysis

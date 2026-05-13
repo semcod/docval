@@ -111,9 +111,7 @@ class CrossRefValidator:
 
     def _check_import_paths(self, chunk: DocChunk):
         """Check Python import statements in code blocks."""
-        import_re = re.compile(
-            r"(?:from\s+([\w.]+)\s+import|import\s+([\w.]+))"
-        )
+        import_re = re.compile(r"(?:from\s+([\w.]+)\s+import|import\s+([\w.]+))")
 
         # Only check inside code blocks
         code_block_re = re.compile(r"```(?:python|py)?\n(.*?)```", re.DOTALL)
@@ -198,20 +196,52 @@ class CrossRefValidator:
     def _matches_known_cli(self, cmd: str, potential_cli: str) -> bool:
         """Return True when the candidate looks like a project CLI invocation."""
         return any(
-            cmd == known or potential_cli.startswith(known)
-            for known in self.ctx.cli_commands
+            cmd == known or potential_cli.startswith(known) for known in self.ctx.cli_commands
         )
 
 
 # Common backtick-quoted terms that aren't code references
 _COMMON_NON_CODE = {
-    "true", "false", "null", "none", "yes", "no",
-    "string", "int", "float", "bool", "dict", "list", "tuple",
-    "get", "post", "put", "delete", "patch",
-    "master", "main", "develop", "dev", "prod", "staging",
-    "bash", "shell", "python", "node", "npm", "pip",
-    "readme", "changelog", "license", "todo", "fixme",
-    "example", "default", "config", "settings", "env",
+    "true",
+    "false",
+    "null",
+    "none",
+    "yes",
+    "no",
+    "string",
+    "int",
+    "float",
+    "bool",
+    "dict",
+    "list",
+    "tuple",
+    "get",
+    "post",
+    "put",
+    "delete",
+    "patch",
+    "master",
+    "main",
+    "develop",
+    "dev",
+    "prod",
+    "staging",
+    "bash",
+    "shell",
+    "python",
+    "node",
+    "npm",
+    "pip",
+    "readme",
+    "changelog",
+    "license",
+    "todo",
+    "fixme",
+    "example",
+    "default",
+    "config",
+    "settings",
+    "env",
 }
 
 
@@ -219,9 +249,37 @@ _CLI_CODE_BLOCK_RE = re.compile(r"```(?:bash|shell|sh)?\n(.*?)```", re.DOTALL)
 
 
 _COMMON_SHELL_COMMANDS = {
-    "cd", "ls", "cat", "echo", "mkdir", "rm", "cp", "mv",
-    "git", "python", "pip", "npm", "node", "make", "docker",
-    "tar", "zip", "unzip", "curl", "wget", "ssh", "scp",
-    "chmod", "chown", "find", "grep", "awk", "sed",
-    "source", "export", "unset", "env", "set",
+    "cd",
+    "ls",
+    "cat",
+    "echo",
+    "mkdir",
+    "rm",
+    "cp",
+    "mv",
+    "git",
+    "python",
+    "pip",
+    "npm",
+    "node",
+    "make",
+    "docker",
+    "tar",
+    "zip",
+    "unzip",
+    "curl",
+    "wget",
+    "ssh",
+    "scp",
+    "chmod",
+    "chown",
+    "find",
+    "grep",
+    "awk",
+    "sed",
+    "source",
+    "export",
+    "unset",
+    "env",
+    "set",
 }

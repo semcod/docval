@@ -25,9 +25,9 @@ class JSONReporter:
                 "chunks_duplicate": result.chunks_duplicate,
                 "chunks_orphaned": result.chunks_orphaned,
                 "chunks_empty": result.chunks_empty,
-                "health_pct": round(
-                    result.chunks_valid / result.chunks_total * 100, 1
-                ) if result.chunks_total else 0,
+                "health_pct": round(result.chunks_valid / result.chunks_total * 100, 1)
+                if result.chunks_total
+                else 0,
             },
             "files": [],
         }

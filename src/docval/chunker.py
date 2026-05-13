@@ -43,28 +43,32 @@ def chunk_file(path: Path, base_dir: Path | None = None) -> DocFile:
         # No headings — entire file is one chunk
         content = text.strip()
         if content:
-            chunks.append(DocChunk(
-                file=path,
-                heading="(no heading)",
-                heading_level=0,
-                content=content,
-                line_start=1,
-                line_end=total_lines,
-            ))
+            chunks.append(
+                DocChunk(
+                    file=path,
+                    heading="(no heading)",
+                    heading_level=0,
+                    content=content,
+                    line_start=1,
+                    line_end=total_lines,
+                )
+            )
         return DocFile(path=path, relative_path=rel, chunks=chunks, total_lines=total_lines)
 
     # Preamble: content before first heading
     if headings[0][0] > 0:
-        preamble = "".join(lines[:headings[0][0]]).strip()
+        preamble = "".join(lines[: headings[0][0]]).strip()
         if preamble:
-            chunks.append(DocChunk(
-                file=path,
-                heading="(preamble)",
-                heading_level=0,
-                content=preamble,
-                line_start=1,
-                line_end=headings[0][0],
-            ))
+            chunks.append(
+                DocChunk(
+                    file=path,
+                    heading="(preamble)",
+                    heading_level=0,
+                    content=preamble,
+                    line_start=1,
+                    line_end=headings[0][0],
+                )
+            )
 
     # Each heading section
     for idx, (line_idx, level, title) in enumerate(headings):
@@ -75,14 +79,16 @@ def chunk_file(path: Path, base_dir: Path | None = None) -> DocFile:
 
         content = "".join(lines[line_idx:end_idx]).strip()
         if content:
-            chunks.append(DocChunk(
-                file=path,
-                heading=title,
-                heading_level=level,
-                content=content,
-                line_start=line_idx + 1,
-                line_end=end_idx,
-            ))
+            chunks.append(
+                DocChunk(
+                    file=path,
+                    heading=title,
+                    heading_level=level,
+                    content=content,
+                    line_start=line_idx + 1,
+                    line_end=end_idx,
+                )
+            )
 
     return DocFile(path=path, relative_path=rel, chunks=chunks, total_lines=total_lines)
 
@@ -92,7 +98,16 @@ def discover_md_files(
     exclude_patterns: list[str] | None = None,
 ) -> list[Path]:
     """Recursively find all .md files, excluding node_modules, .git, etc."""
-    default_excludes = {"node_modules", ".git", "__pycache__", ".venv", "venv", ".tox", "_archive", "archive"}
+    default_excludes = {
+        "node_modules",
+        ".git",
+        "__pycache__",
+        ".venv",
+        "venv",
+        ".tox",
+        "_archive",
+        "archive",
+    }
     excludes = default_excludes | set(exclude_patterns or [])
 
     result: list[Path] = []

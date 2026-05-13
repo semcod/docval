@@ -7,9 +7,7 @@ TODO/FIXME markers, archive paths, duplicate detection, stale dates.
 from __future__ import annotations
 
 import re
-from collections import defaultdict
 from difflib import SequenceMatcher
-from pathlib import Path
 
 from ..models import (
     ActionType,
@@ -65,8 +63,14 @@ class HeuristicValidator:
         """Detect explicit outdated/deprecated markers."""
         outdated_patterns = [
             (r"\b(DEPRECATED|OBSOLETE|DO NOT USE)\b", "Explicit deprecation marker"),
-            (r"(?i)\b(legacy|archived)\s+(version|api|approach|code|module|system)\b", "Legacy reference"),
-            (r"(?i)\bthis\s+(document|page|section)\s+is\s+(no longer|outdated|deprecated)", "Self-declared outdated"),
+            (
+                r"(?i)\b(legacy|archived)\s+(version|api|approach|code|module|system)\b",
+                "Legacy reference",
+            ),
+            (
+                r"(?i)\bthis\s+(document|page|section)\s+is\s+(no longer|outdated|deprecated)",
+                "Self-declared outdated",
+            ),
         ]
 
         for pattern, message in outdated_patterns:
@@ -78,7 +82,9 @@ class HeuristicValidator:
                 chunk.add_issue("outdated_marker", Severity.WARNING, message)
                 return
 
-    def _check_broken_internal_links(self, chunk: DocChunk, doc_file: DocFile, ctx: ProjectContext | None = None):
+    def _check_broken_internal_links(
+        self, chunk: DocChunk, doc_file: DocFile, ctx: ProjectContext | None = None
+    ):
         """Check for internal Markdown links pointing to non-existent files."""
         # Strip fenced code blocks to avoid matching Python calls like func(arg)
         content_no_code = re.sub(r"```[\s\S]*?```", "", chunk.content)
@@ -104,10 +110,12 @@ class HeuristicValidator:
             ]
             # Also try resolving relative to project root
             if ctx and ctx.root:
-                candidates.extend([
-                    ctx.root / target_path,
-                    ctx.root / (target_path + ".md"),
-                ])
+                candidates.extend(
+                    [
+                        ctx.root / target_path,
+                        ctx.root / (target_path + ".md"),
+                    ]
+                )
 
             if not any(c.exists() for c in candidates):
                 chunk.add_issue(
@@ -136,7 +144,12 @@ class HeuristicValidator:
     def _check_archive_path(self, chunk: DocChunk, doc_file: DocFile):
         """Files in archive/ directories are likely outdated."""
         rel = doc_file.relative_path.lower()
-        if "/archive/" in rel or rel.startswith("archive/") or "/_archive/" in rel or rel.startswith("_archive/"):
+        if (
+            "/archive/" in rel
+            or rel.startswith("archive/")
+            or "/_archive/" in rel
+            or rel.startswith("_archive/")
+        ):
             if chunk.status in (ChunkStatus.UNCHECKED, ChunkStatus.VALID, ChunkStatus.EMPTY):
                 chunk.status = ChunkStatus.OUTDATED
                 chunk.action = ActionType.ARCHIVE
@@ -194,8 +207,9 @@ class HeuristicValidator:
         if content_hash in self._seen_hashes:
             prev_chunk = self._seen_hashes[content_hash]
             # Verify with full comparison to avoid hash collisions
-            full_ratio = SequenceMatcher(None, normalized,
-                                         re.sub(r"\s+", " ", prev_chunk.content.lower().strip())).ratio()
+            full_ratio = SequenceMatcher(
+                None, normalized, re.sub(r"\s+", " ", prev_chunk.content.lower().strip())
+            ).ratio()
             if full_ratio > 0.80:
                 chunk.status = ChunkStatus.DUPLICATE
                 chunk.action = ActionType.DELETE
@@ -214,10 +228,7 @@ class HeuristicValidator:
     def _check_minimal_content(self, chunk: DocChunk):
         """Flag heading-only sections with no meaningful body."""
         lines = chunk.content.strip().splitlines()
-        non_heading = [
-            l for l in lines
-            if not re.match(r"^#+\s+", l) and l.strip()
-        ]
+        non_heading = [l for l in lines if not re.match(r"^#+\s+", l) and l.strip()]
         if len(lines) > 0 and len(non_heading) == 0:
             chunk.add_issue(
                 "heading_only",

@@ -74,8 +74,7 @@ class LLMValidator:
             from litellm import completion
         except ImportError:
             raise ImportError(
-                "litellm is required for LLM validation. "
-                "Install with: pip install docval[llm]"
+                "litellm is required for LLM validation. Install with: pip install docval[llm]"
             )
 
         context_str = self._build_context_summary()
@@ -93,7 +92,7 @@ class LLMValidator:
 
         # Process in batches
         for i in range(0, len(chunks_to_validate), batch_size):
-            batch = chunks_to_validate[i:i + batch_size]
+            batch = chunks_to_validate[i : i + batch_size]
             if len(batch) == 1:
                 # Single chunk validation (original behavior)
                 result = self._validate_chunk(completion, batch[0], context_str)
@@ -151,9 +150,11 @@ class LLMValidator:
 
                     reason = result.get("reason", "")
                     if reason:
-                        severity = Severity.ERROR if status in (
-                            ChunkStatus.INVALID, ChunkStatus.ORPHANED
-                        ) else Severity.WARNING
+                        severity = (
+                            Severity.ERROR
+                            if status in (ChunkStatus.INVALID, ChunkStatus.ORPHANED)
+                            else Severity.WARNING
+                        )
                         chunk.add_issue("llm_review", severity, reason)
 
                     suggestion = result.get("suggestion", "")
@@ -167,8 +168,7 @@ class LLMValidator:
         except Exception as e:
             for chunk in chunks:
                 chunk.add_issue(
-                    "llm_error", Severity.INFO,
-                    f"LLM batch validation failed: {str(e)[:100]}"
+                    "llm_error", Severity.INFO, f"LLM batch validation failed: {str(e)[:100]}"
                 )
             return 0
 
@@ -211,9 +211,11 @@ class LLMValidator:
 
                 reason = parsed.get("reason", "")
                 if reason:
-                    severity = Severity.ERROR if status in (
-                        ChunkStatus.INVALID, ChunkStatus.ORPHANED
-                    ) else Severity.WARNING
+                    severity = (
+                        Severity.ERROR
+                        if status in (ChunkStatus.INVALID, ChunkStatus.ORPHANED)
+                        else Severity.WARNING
+                    )
                     chunk.add_issue("llm_review", severity, reason)
 
                 suggestion = parsed.get("suggestion", "")
@@ -223,10 +225,7 @@ class LLMValidator:
                 return True
 
         except Exception as e:
-            chunk.add_issue(
-                "llm_error", Severity.INFO,
-                f"LLM validation failed: {str(e)[:100]}"
-            )
+            chunk.add_issue("llm_error", Severity.INFO, f"LLM validation failed: {str(e)[:100]}")
 
         return False
 
@@ -234,9 +233,9 @@ class LLMValidator:
         """Build validation prompt for multiple chunks."""
         chunk_descriptions = []
         for i, chunk in enumerate(chunks):
-            content = chunk.content[:self.max_chunk_chars // len(chunks)]
+            content = chunk.content[: self.max_chunk_chars // len(chunks)]
             chunk_descriptions.append(
-                f"## Chunk {i+1}\n"
+                f"## Chunk {i + 1}\n"
                 f"File: {chunk.relative_path}\n"
                 f"Section: {chunk.heading} (H{chunk.heading_level})\n"
                 f"Lines: {chunk.line_start}-{chunk.line_end}\n\n"
@@ -276,7 +275,7 @@ Note: Example code snippets with placeholder names (e.g., "./my-project", "examp
 
     def _build_prompt(self, chunk: DocChunk, context_str: str) -> str:
         """Build the validation prompt for a single chunk."""
-        content = chunk.content[:self.max_chunk_chars]
+        content = chunk.content[: self.max_chunk_chars]
 
         existing_issues = ""
         if chunk.issues:
@@ -332,7 +331,9 @@ Note: Example code snippets with placeholder names (e.g., "./my-project", "examp
             parts.append(f"Classes ({len(self.ctx.classes)}): {', '.join(self.ctx.classes[:20])}")
 
         if self.ctx.functions:
-            parts.append(f"Public functions ({len(self.ctx.functions)}): {', '.join(self.ctx.functions[:20])}")
+            parts.append(
+                f"Public functions ({len(self.ctx.functions)}): {', '.join(self.ctx.functions[:20])}"
+            )
 
         if self.ctx.modules:
             parts.append(f"Modules ({len(self.ctx.modules)}): {', '.join(self.ctx.modules[:20])}")
@@ -344,7 +345,7 @@ Note: Example code snippets with placeholder names (e.g., "./my-project", "examp
             parts.append(f"Dependencies: {', '.join(self.ctx.dependencies[:15])}")
 
         if self.ctx.recent_commits:
-            parts.append(f"Recent commits:\n  " + "\n  ".join(self.ctx.recent_commits[:5]))
+            parts.append("Recent commits:\n  " + "\n  ".join(self.ctx.recent_commits[:5]))
 
         return "\n".join(parts)
 

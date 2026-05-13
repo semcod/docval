@@ -2,7 +2,6 @@
 
 from __future__ import annotations
 
-import os
 from pathlib import Path
 
 import click
@@ -14,6 +13,7 @@ def _load_env():
     """Load .env file if present in current directory or project root."""
     try:
         from dotenv import load_dotenv
+
         # Try current directory first, then parent directories
         cwd = Path.cwd()
         for path in [cwd, *cwd.parents]:
@@ -77,6 +77,17 @@ def _export_todo(result, project: Path):
     todo_path = project / "TODO.md"
     TodoExporter().export(result, output_path=todo_path)
     click.echo(f"  ✓ Exported to {todo_path}")
+
+
+def _export_toon(result, project: Path):
+    from .exporters import ToonExporter
+
+    # Output to project/ subdirectory like other tools
+    project_dir = project / "project"
+    project_dir.mkdir(parents=True, exist_ok=True)
+    toon_path = project_dir / "docval.toon.yaml"
+    ToonExporter(project_name=project.name).export(result, output_path=toon_path)
+    click.echo(f"  ✓ Exported to {toon_path}")
 
 
 def _export_planfile(
@@ -165,10 +176,11 @@ def _print_sync_planfile_help():
     click.echo("\nNo export destination specified. Use one of:")
     click.echo("  --export-yaml       Export to planfile.yaml")
     click.echo("  --export-todo       Export to TODO.md")
+    click.echo("  --export-toon       Export to docval.toon.yaml")
     click.echo("  --github-owner      Export to GitHub Issues")
     click.echo("  --gitlab-project    Export to GitLab Issues")
     click.echo("\nExample:")
-    click.echo("  docval sync-planfile docs/ --export-yaml --export-todo")
+    click.echo("  docval sync-planfile docs/ --export-yaml --export-todo --export-toon")
 
 
 @click.group()
@@ -180,13 +192,23 @@ def main():
 
 @main.command()
 @click.argument("docs_dir", type=click.Path(exists=True, file_okay=False, path_type=Path))
-@click.option("--project", "-p", type=click.Path(exists=True, file_okay=False, path_type=Path),
-              default=None, help="Project root (default: parent of docs_dir)")
+@click.option(
+    "--project",
+    "-p",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=None,
+    help="Project root (default: parent of docs_dir)",
+)
 @click.option("--exclude", "-e", multiple=True, help="Directory names to exclude")
 @click.option("--llm/--no-llm", default=False, help="Use LLM for semantic validation")
 @click.option("--model", "-m", default="gpt-4o-mini", help="LiteLLM model identifier")
-@click.option("--output", "-o", type=click.Path(path_type=Path), default=None,
-              help="Output report file (.md or .json)")
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Output report file (.md or .json)",
+)
 @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
 def scan(
     docs_dir: Path,
@@ -230,14 +252,26 @@ def scan(
 
 @main.command()
 @click.argument("docs_dir", type=click.Path(exists=True, file_okay=False, path_type=Path))
-@click.option("--project", "-p", type=click.Path(exists=True, file_okay=False, path_type=Path),
-              default=None, help="Project root")
+@click.option(
+    "--project",
+    "-p",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=None,
+    help="Project root",
+)
 @click.option("--exclude", "-e", multiple=True, help="Directory names to exclude")
 @click.option("--force", is_flag=True, help="Apply changes without confirmation")
-@click.option("--archive-dir", type=click.Path(path_type=Path),
-              default=None, help="Directory for archived docs")
-@click.option("--dry-run/--no-dry-run", default=True,
-              help="Preview changes without applying (default: dry-run)")
+@click.option(
+    "--archive-dir",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Directory for archived docs",
+)
+@click.option(
+    "--dry-run/--no-dry-run",
+    default=True,
+    help="Preview changes without applying (default: dry-run)",
+)
 @click.option("--llm/--no-llm", default=False, help="Use LLM for semantic validation")
 @click.option("--model", "-m", default="gpt-4o-mini", help="LiteLLM model identifier")
 @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
@@ -296,24 +330,34 @@ def fix(
             return
 
     action_result = executor.execute(result.doc_files, docs_dir)
-    click.echo(f"\nActions applied:")
+    click.echo("\nActions applied:")
     click.echo(f"  Deleted sections: {action_result.deleted_chunks}")
     click.echo(f"  Archived files:   {action_result.archived_files}")
     click.echo(f"  Flagged for fix:  {action_result.fixed_chunks}")
     click.echo(f"  Flagged review:   {action_result.flagged_chunks}")
     if action_result.errors:
-        click.echo(f"\nErrors:")
+        click.echo("\nErrors:")
         for err in action_result.errors:
             click.echo(f"  {err}")
 
 
 @main.command()
 @click.argument("docs_dir", type=click.Path(exists=True, file_okay=False, path_type=Path))
-@click.option("--project", "-p", type=click.Path(exists=True, file_okay=False, path_type=Path),
-              default=None, help="Project root")
+@click.option(
+    "--project",
+    "-p",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=None,
+    help="Project root",
+)
 @click.option("--exclude", "-e", multiple=True, help="Directory names to exclude")
-@click.option("--output", "-o", type=click.Path(path_type=Path),
-              default=Path("docval-patch.txt"), help="Output patch file")
+@click.option(
+    "--output",
+    "-o",
+    type=click.Path(path_type=Path),
+    default=Path("docval-patch.txt"),
+    help="Output patch file",
+)
 @click.option("--llm/--no-llm", default=False, help="Use LLM for semantic validation")
 @click.option("--model", "-m", default="gpt-4o-mini", help="LiteLLM model identifier")
 def patch(
@@ -392,19 +436,28 @@ def stats(docs_dir: Path, exclude: tuple[str, ...]):
 
 @main.command("sync-planfile")
 @click.argument("docs_dir", type=click.Path(exists=True, file_okay=False, path_type=Path))
-@click.option("--project", "-p", type=click.Path(exists=True, file_okay=False, path_type=Path),
-              default=None, help="Project root (default: parent of docs_dir)")
+@click.option(
+    "--project",
+    "-p",
+    type=click.Path(exists=True, file_okay=False, path_type=Path),
+    default=None,
+    help="Project root (default: parent of docs_dir)",
+)
 @click.option("--exclude", "-e", multiple=True, help="Directory names to exclude")
 @click.option("--export-yaml", is_flag=True, help="Export to planfile.yaml")
 @click.option("--export-todo", is_flag=True, help="Export to TODO.md")
+@click.option("--export-toon", is_flag=True, help="Export to docval.toon.yaml")
 @click.option("--github-owner", help="GitHub owner/organization")
 @click.option("--github-repo", help="GitHub repository name")
 @click.option("--github-token", help="GitHub token (or set GITHUB_TOKEN env var)")
 @click.option("--gitlab-project", help="GitLab project ID")
 @click.option("--gitlab-token", help="GitLab token (or set GITLAB_TOKEN env var)")
 @click.option("--gitlab-url", default="https://gitlab.com", help="GitLab instance URL")
-@click.option("--dry-run/--no-dry-run", default=True,
-              help="Preview changes without applying (default: dry-run)")
+@click.option(
+    "--dry-run/--no-dry-run",
+    default=True,
+    help="Preview changes without applying (default: dry-run)",
+)
 @click.option("--sprint-id", default="doc-cleanup", help="Sprint identifier")
 @click.option("--verbose", "-v", is_flag=True, help="Verbose output")
 def sync_planfile(
@@ -413,6 +466,7 @@ def sync_planfile(
     exclude: tuple[str, ...],
     export_yaml: bool,
     export_todo: bool,
+    export_toon: bool,
     github_owner: str | None,
     github_repo: str | None,
     github_token: str | None,
@@ -423,13 +477,13 @@ def sync_planfile(
     sprint_id: str,
     verbose: bool,
 ):
-    """Sync docval results to planfile, GitHub, or GitLab.
+    """Sync docval results to planfile, toon, GitHub, or GitLab.
 
     By default runs in dry-run mode. Use --no-dry-run to apply changes.
 
     Examples:
 
-        docval sync-planfile docs/ --export-yaml --export-todo
+        docval sync-planfile docs/ --export-yaml --export-todo --export-toon
 
         docval sync-planfile docs/ --github-owner wronai --github-repo docval --no-dry-run
 
@@ -447,6 +501,10 @@ def sync_planfile(
     exported = False
     if export_todo:
         _export_todo(result, project)
+        exported = True
+
+    if export_toon:
+        _export_toon(result, project)
         exported = True
 
     if export_yaml:

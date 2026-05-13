@@ -2,12 +2,13 @@
 
 from __future__ import annotations
 
-from ..models import ActionType, ChunkStatus, DocFile, Severity, ValidationResult
+from ..models import ActionType, ChunkStatus, Severity, ValidationResult
 
 try:
     from rich.console import Console
     from rich.table import Table
     from rich.panel import Panel
+
     HAS_RICH = True
 except ImportError:
     HAS_RICH = False

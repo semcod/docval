@@ -10,6 +10,7 @@ flowchart TD
         src__docval__context___collect_python_symbols["_collect_python_symbols"]
         src__docval__context___collect_function_decorator_metadata["_collect_function_decorator_me"]
         src__docval__context___decorator_name["_decorator_name"]
+        src__docval__cli___load_env["_load_env"]
         src__docval__cli___resolve_project_paths["_resolve_project_paths"]
         src__docval__cli___run_scan["_run_scan"]
         src__docval__cli___summarize_actions["_summarize_actions"]
@@ -18,8 +19,7 @@ flowchart TD
         src__docval__cli__main["main"]
         src__docval__cli__scan["scan"]
         src__docval__cli__fix["fix"]
-        src__docval__cli__patch["patch"]
-        ...["+53 more"]
+        ...["+54 more"]
     end
 
     subgraph Exporters
@@ -41,4 +41,4 @@ flowchart TD
         ...["+17 more"]
     end
 
-    class src__docval__pipeline__scan,src__docval__cli___resolve_project_paths,src__docval__cli___run_scan,src__docval__cli___summarize_actions,src__docval__cli___print_action_counts,src__docval__cli___export_todo,src__docval__cli___export_planfile,src__docval__cli___export_github,src__docval__cli___export_gitlab,src__docval__cli___print_sync_planfile_help entry
+    class src__docval__pipeline__scan,src__docval__cli___load_env,src__docval__cli___resolve_project_paths,src__docval__cli___run_scan,src__docval__cli___summarize_actions,src__docval__cli___print_action_counts,src__docval__cli___export_todo,src__docval__cli___export_planfile,src__docval__cli___export_github,src__docval__cli___export_gitlab entry

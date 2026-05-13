@@ -1,5 +1,5 @@
-# code2llm | 22f 3466L | python:21,shell:1 | 2026-04-14
-# CC̄=4.9 | critical:0/120 | dups:0 | cycles:1
+# code2llm | 22f 3517L | python:21,shell:1 | 2026-04-15
+# CC̄=5.0 | critical:0/121 | dups:0 | cycles:1
 
 HEALTH[0]: ok
 
@@ -9,7 +9,7 @@ REFACTOR[1]:
 PIPELINES[92]:
   [1] Src [scan]: scan → build_context → _collect_src_files
       PURITY: 100% pure
-  [2] Src [main]: main
+  [2] Src [main]: main → _load_env
       PURITY: 100% pure
   [3] Src [scan]: scan → _resolve_project_paths
       PURITY: 100% pure
@@ -19,9 +19,9 @@ PIPELINES[92]:
       PURITY: 100% pure
 
 LAYERS:
-  src/                            CC̄=4.9    ←in:0  →out:0
-  │ cli                        452L  0C   15m  CC=10     ←0
-  │ llm_validator              383L  1C    9m  CC=12     ←0
+  src/                            CC̄=5.0    ←in:0  →out:0
+  │ cli                        469L  0C   16m  CC=10     ←0
+  │ llm_validator              417L  1C    9m  CC=13     ←0
   │ github                     289L  1C   10m  CC=11     ←0
   │ context                    256L  0C   13m  CC=12     ←1
   │ todo                       251L  2C    8m  CC=11     ←0

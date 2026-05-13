@@ -1,8 +1,8 @@
-# docval | 22f 3466L | shell:1,python:21 | 2026-04-14
-# stats: 120 func | 0 cls | 22 mod | CC̄=4.9 | critical:0 | cycles:0
+# docval | 22f 3517L | shell:1,python:21 | 2026-04-15
+# stats: 121 func | 0 cls | 22 mod | CC̄=5.0 | critical:0 | cycles:0
 # alerts[5]: fan-out chunk_file=16; fan-out fix=16; fan-out scan=15; fan-out _extract_dependencies=13; fan-out _parse_toon_files=13
 # hotspots[5]: chunk_file fan=16; fix fan=16; scan fan=15; _extract_dependencies fan=13; _parse_toon_files fan=13
-# evolution: CC̄ 4.9→4.9 (flat 0.0)
+# evolution: CC̄ 4.9→5.0 (regressed +0.1)
 # Keys: M=modules, D=details, i=imports, e=exports, c=classes, f=functions, m=methods
 M[22]:
   project.sh,35
@@ -10,7 +10,7 @@ M[22]:
   src/docval/actions/__init__.py,4
   src/docval/actions/executor.py,176
   src/docval/chunker.py,111
-  src/docval/cli.py,452
+  src/docval/cli.py,469
   src/docval/context.py,256
   src/docval/exporters/__init__.py,8
   src/docval/exporters/github.py,289
@@ -26,8 +26,11 @@ M[22]:
   src/docval/validators/__init__.py,6
   src/docval/validators/crossref.py,227
   src/docval/validators/heuristic.py,226
-  src/docval/validators/llm_validator.py,383
+  src/docval/validators/llm_validator.py,417
 D:
+  src/docval/validators/llm_validator.py:
+    e: LLMValidator
+    LLMValidator: __init__(6),validate(3),_validate_batch(3),_validate_chunk(3),_build_batch_prompt(2),_build_prompt(2),_build_context_summary(0),_parse_batch_response(2),_parse_response(1)  # Validate documentation chunks using an LLM via litellm...
   src/docval/chunker.py:
     e: chunk_file,discover_md_files,chunk_directory
     chunk_file(path;base_dir)
@@ -51,9 +54,6 @@ D:
     _parse_toon_files(ctx;root)
     _collect_git_info(ctx;root)
     _build_dir_tree(ctx;root;max_depth)
-  src/docval/validators/llm_validator.py:
-    e: LLMValidator
-    LLMValidator: __init__(5),validate(3),_validate_batch(3),_validate_chunk(3),_build_batch_prompt(2),_build_prompt(2),_build_context_summary(0),_parse_batch_response(2),_parse_response(1)  # Validate documentation chunks using an LLM via litellm...
   src/docval/actions/executor.py:
     e: ActionResult,_ActionPlan,ActionExecutor
     ActionResult:  # Summary of executed actions...
@@ -65,15 +65,16 @@ D:
   src/docval/exporters/gitlab.py:
     e: GitLabExporter
     GitLabExporter: __init__(4),export(1),_preview_export(1),_execute_export(1),_generate_title(1),_generate_description(2),_generate_labels(1)  # Export validation results to GitLab Issues...
-  src/docval/exporters/github.py:
-    e: GitHubExporter
-    GitHubExporter: __init__(4),_get_github(0),export(1),_preview_export(1),_execute_export(1),_find_existing_issue(2),_generate_title(1),_generate_body(2),_generate_labels(1),sync_from_planfile(1)  # Export validation results to GitHub Issues...
   src/docval/exporters/todo.py:
     e: TodoTask,TodoExporter
     TodoTask:  # A single task for the TODO list...
     TodoExporter: __init__(1),export(2),_extract_tasks(1),_determine_priority(1),_generate_title(2),_generate_labels(3),_generate_todo_md(1),_format_task(1)  # Export validation results to TODO.md format...
+  src/docval/exporters/github.py:
+    e: GitHubExporter
+    GitHubExporter: __init__(4),_get_github(0),export(1),_preview_export(1),_execute_export(1),_find_existing_issue(2),_generate_title(1),_generate_body(2),_generate_labels(1),sync_from_planfile(1)  # Export validation results to GitHub Issues...
   src/docval/cli.py:
-    e: _resolve_project_paths,_run_scan,_summarize_actions,_print_action_counts,_export_todo,_export_planfile,_export_github,_export_gitlab,_print_sync_planfile_help,main,scan,fix,patch,stats,sync_planfile
+    e: _load_env,_resolve_project_paths,_run_scan,_summarize_actions,_print_action_counts,_export_todo,_export_planfile,_export_github,_export_gitlab,_print_sync_planfile_help,main,scan,fix,patch,stats,sync_planfile
+    _load_env()
     _resolve_project_paths(docs_dir;project)
     _run_scan(docs_dir;project;exclude;llm;model;verbose)
     _summarize_actions(result)

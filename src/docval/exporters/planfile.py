@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING
 import yaml
 
 if TYPE_CHECKING:
-    from ..models import ValidationResult, DocChunk, Issue
+    from ..models import ValidationResult, DocChunk
 
 
 class PlanfileExporter:
@@ -122,9 +122,7 @@ class PlanfileExporter:
 
         return planfile
 
-    def _extract_tickets(
-        self, result: "ValidationResult", sprint_id: str
-    ) -> dict[str, dict]:
+    def _extract_tickets(self, result: "ValidationResult", sprint_id: str) -> dict[str, dict]:
         """Extract tickets from validation result."""
         tickets: dict[str, dict] = {}
         task_counter = 0
@@ -190,7 +188,11 @@ class PlanfileExporter:
             "duplicate": "Remove duplicate",
         }
 
-        base = action_map.get(chunk.issues[0].rule, "Fix documentation issue") if chunk.issues else "Fix documentation"
+        base = (
+            action_map.get(chunk.issues[0].rule, "Fix documentation issue")
+            if chunk.issues
+            else "Fix documentation"
+        )
 
         if chunk.heading:
             return f"{base}: {chunk.heading}"

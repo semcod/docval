@@ -8,7 +8,6 @@ import re
 import subprocess
 from pathlib import Path
 
-import yaml
 
 from .models import ProjectContext
 
@@ -39,10 +38,7 @@ def _collect_src_files(ctx: ProjectContext, root: Path, max_depth: int):
 
     for dirpath, dirnames, filenames in os.walk(root):
         # Prune excluded directories
-        dirnames[:] = [
-            d for d in dirnames
-            if d not in skip_dirs and not d.startswith(".")
-        ]
+        dirnames[:] = [d for d in dirnames if d not in skip_dirs and not d.startswith(".")]
 
         depth = len(Path(dirpath).relative_to(root).parts)
         if depth > max_depth:
@@ -66,6 +62,7 @@ def _extract_python_symbols(ctx: ProjectContext, root: Path):
 
         ctx.modules.append(_module_name_from_src(src))
         _collect_python_symbols(ctx, tree)
+
 
 def _parse_python_ast(filepath: Path) -> ast.AST | None:
     """Parse a Python source file and return its AST, or None on failure."""
@@ -149,6 +146,7 @@ def _extract_version(ctx: ProjectContext, root: Path):
         if pkg_json.exists():
             try:
                 import json
+
                 data = json.loads(pkg_json.read_text())
                 ctx.version = data.get("version", "")
             except Exception:
@@ -221,6 +219,7 @@ def _collect_git_info(ctx: ProjectContext, root: Path):
     """Collect recent git commit messages."""
     try:
         import git as gitpython
+
         repo = gitpython.Repo(root, search_parent_directories=True)
         for commit in repo.iter_commits("HEAD", max_count=10):
             msg = commit.message.strip().split("\n")[0]
@@ -230,7 +229,10 @@ def _collect_git_info(ctx: ProjectContext, root: Path):
         try:
             result = subprocess.run(
                 ["git", "log", "--oneline", "-10"],
-                cwd=root, capture_output=True, text=True, timeout=5
+                cwd=root,
+                capture_output=True,
+                text=True,
+                timeout=5,
             )
             if result.returncode == 0:
                 ctx.recent_commits = result.stdout.strip().splitlines()
@@ -242,15 +244,29 @@ def _build_dir_tree(ctx: ProjectContext, root: Path, max_depth: int = 2):
     """Build a compact directory tree string."""
     try:
         result = subprocess.run(
-            ["find", str(root), "-maxdepth", str(max_depth), "-type", "f",
-             "-not", "-path", "*/.git/*", "-not", "-path", "*/node_modules/*",
-             "-not", "-path", "*/__pycache__/*"],
-            capture_output=True, text=True, timeout=10
+            [
+                "find",
+                str(root),
+                "-maxdepth",
+                str(max_depth),
+                "-type",
+                "f",
+                "-not",
+                "-path",
+                "*/.git/*",
+                "-not",
+                "-path",
+                "*/node_modules/*",
+                "-not",
+                "-path",
+                "*/__pycache__/*",
+            ],
+            capture_output=True,
+            text=True,
+            timeout=10,
         )
         if result.returncode == 0:
             files = sorted(result.stdout.strip().splitlines())
-            ctx.dir_tree = "\n".join(
-                str(Path(f).relative_to(root)) for f in files[:100]
-            )
+            ctx.dir_tree = "\n".join(str(Path(f).relative_to(root)) for f in files[:100])
     except Exception:
         ctx.dir_tree = "\n".join(ctx.src_files[:50])

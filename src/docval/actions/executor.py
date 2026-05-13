@@ -10,12 +10,13 @@ import shutil
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from ..models import ActionType, ChunkStatus, DocFile
+from ..models import ActionType, DocFile
 
 
 @dataclass
 class ActionResult:
     """Summary of executed actions."""
+
     deleted_chunks: int = 0
     archived_files: int = 0
     fixed_chunks: int = 0

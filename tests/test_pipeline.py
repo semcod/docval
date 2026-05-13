@@ -1,7 +1,5 @@
 """Integration test for the full pipeline."""
 
-from pathlib import Path
-
 import pytest
 
 from docval.pipeline import scan
@@ -17,16 +15,13 @@ def project_with_docs(tmp_path):
     (src / "__init__.py").write_text('"""My package."""\n__version__ = "2.0.0"\n')
     (src / "core.py").write_text(
         'class Engine:\n    """Main engine."""\n    def run(self): pass\n\n'
-        'def process(data): pass\n'
+        "def process(data): pass\n"
     )
-    (src / "cli.py").write_text(
-        'import click\n\n@click.command()\ndef main(): pass\n'
-    )
+    (src / "cli.py").write_text("import click\n\n@click.command()\ndef main(): pass\n")
 
     # pyproject.toml
     (tmp_path / "pyproject.toml").write_text(
-        '[project]\nname = "mypackage"\nversion = "2.0.0"\n'
-        'dependencies = ["click", "rich"]\n'
+        '[project]\nname = "mypackage"\nversion = "2.0.0"\ndependencies = ["click", "rich"]\n'
     )
 
     # Documentation
@@ -76,10 +71,7 @@ class TestFullPipeline:
             docs_dir=project_with_docs / "docs",
             project_root=project_with_docs,
         )
-        valid = [
-            c for f in result.doc_files for c in f.chunks
-            if c.status == ChunkStatus.VALID
-        ]
+        valid = [c for f in result.doc_files for c in f.chunks if c.status == ChunkStatus.VALID]
         assert len(valid) >= 1
 
     def test_detects_outdated(self, project_with_docs):
@@ -88,8 +80,7 @@ class TestFullPipeline:
             project_root=project_with_docs,
         )
         outdated = [
-            c for f in result.doc_files for c in f.chunks
-            if c.status == ChunkStatus.OUTDATED
+            c for f in result.doc_files for c in f.chunks if c.status == ChunkStatus.OUTDATED
         ]
         assert len(outdated) >= 1
 
@@ -98,10 +89,7 @@ class TestFullPipeline:
             docs_dir=project_with_docs / "docs",
             project_root=project_with_docs,
         )
-        empty = [
-            c for f in result.doc_files for c in f.chunks
-            if c.status == ChunkStatus.EMPTY
-        ]
+        empty = [c for f in result.doc_files for c in f.chunks if c.status == ChunkStatus.EMPTY]
         assert len(empty) >= 1
 
     def test_excludes_archive_from_scan(self, project_with_docs):
@@ -110,10 +98,7 @@ class TestFullPipeline:
             project_root=project_with_docs,
         )
         # archive/ directory is excluded from discovery
-        archived = [
-            f for f in result.doc_files
-            if "archive/" in f.relative_path.lower()
-        ]
+        archived = [f for f in result.doc_files if "archive/" in f.relative_path.lower()]
         assert len(archived) == 0
 
     def test_detects_archive_path_heuristic(self, tmp_path):
@@ -158,9 +143,13 @@ class TestFullPipeline:
         )
         result.update_counts()
         assert result.chunks_total == (
-            result.chunks_valid + result.chunks_invalid +
-            result.chunks_outdated + result.chunks_duplicate +
-            result.chunks_orphaned + result.chunks_empty +
-            sum(1 for f in result.doc_files for c in f.chunks
-                if c.status == ChunkStatus.UNCHECKED)
+            result.chunks_valid
+            + result.chunks_invalid
+            + result.chunks_outdated
+            + result.chunks_duplicate
+            + result.chunks_orphaned
+            + result.chunks_empty
+            + sum(
+                1 for f in result.doc_files for c in f.chunks if c.status == ChunkStatus.UNCHECKED
+            )
         )

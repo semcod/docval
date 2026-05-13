@@ -6,7 +6,7 @@
 - **Primary Language**: python
 - **Languages**: python: 21, shell: 1
 - **Analysis Mode**: static
-- **Total Functions**: 120
+- **Total Functions**: 121
 - **Total Classes**: 22
 - **Modules**: 22
 - **Entry Points**: 95
@@ -14,7 +14,7 @@
 ## Architecture by Module
 
 ### src.docval.cli
-- **Functions**: 15
+- **Functions**: 16
 - **File**: `cli.py`
 
 ### src.docval.context
@@ -485,11 +485,11 @@ Functions exposed as public API (no underscore prefix):
 - `src.docval.reporters.console.ConsoleReporter.report` - 5 calls
 - `src.docval.reporters.markdown_report.MarkdownReporter.report` - 4 calls
 - `src.docval.actions.executor.ActionExecutor.execute` - 4 calls
+- `src.docval.cli.main` - 3 calls
 - `src.docval.validators.crossref.CrossRefValidator.validate` - 3 calls
 - `src.docval.exporters.planfile.PlanfileExporter.export` - 3 calls
 - `src.docval.exporters.todo.TodoExporter.export` - 3 calls
 - `src.docval.chunker.chunk_directory` - 2 calls
-- `src.docval.cli.main` - 2 calls
 - `src.docval.exporters.gitlab.GitLabExporter.export` - 2 calls
 - `src.docval.exporters.github.GitHubExporter.export` - 2 calls
 - `src.docval.models.DocChunk.add_issue` - 2 calls

@@ -1,7 +1,7 @@
 <!-- code2docs:start --># docval
 
-![version](https://img.shields.io/badge/version-0.1.0-blue) ![python](https://img.shields.io/badge/python-%3E%3D3.10-blue) ![coverage](https://img.shields.io/badge/coverage-unknown-lightgrey) ![functions](https://img.shields.io/badge/functions-120-green)
-> **120** functions | **22** classes | **22** files | CC̄ = 4.9
+![version](https://img.shields.io/badge/version-0.1.0-blue) ![python](https://img.shields.io/badge/python-%3E%3D3.10-blue) ![coverage](https://img.shields.io/badge/coverage-unknown-lightgrey) ![functions](https://img.shields.io/badge/functions-121-green)
+> **121** functions | **22** classes | **22** files | CC̄ = 5.0
 
 > Auto-generated project documentation from source code analysis.
 
@@ -148,7 +148,7 @@ Content outside the markers is preserved when regenerating. Enable this with `sy
 
 ```
 docval/
-├── project        ├── chunker    ├── docval/        ├── pipeline        ├── actions/        ├── context            ├── llm_validator        ├── validators/        ├── cli            ├── heuristic            ├── crossref        ├── exporters/            ├── gitlab            ├── planfile            ├── github        ├── reporters/            ├── markdown_report            ├── json_report            ├── todo            ├── console        ├── models            ├── executor```
+├── project    ├── docval/        ├── chunker        ├── pipeline        ├── actions/        ├── context        ├── cli        ├── validators/            ├── llm_validator            ├── heuristic        ├── exporters/            ├── crossref            ├── gitlab            ├── planfile            ├── github        ├── reporters/            ├── markdown_report            ├── todo            ├── json_report            ├── console        ├── models            ├── executor```
 
 ## API Overview
 
@@ -161,9 +161,9 @@ docval/
 - **`PlanfileExporter`** — Export validation results to planfile.yaml format.
 - **`GitHubExporter`** — Export validation results to GitHub Issues.
 - **`MarkdownReporter`** — Generate a Markdown report of validation results.
-- **`JSONReporter`** — Generate a JSON report of validation results.
 - **`TodoTask`** — A single task for the TODO list.
 - **`TodoExporter`** — Export validation results to TODO.md format.
+- **`JSONReporter`** — Generate a JSON report of validation results.
 - **`ConsoleReporter`** — Print validation results to the console using rich.
 - **`ChunkStatus`** — —
 - **`ActionType`** — —
@@ -198,7 +198,7 @@ docval/
 📦 `src.docval.actions`
 📄 `src.docval.actions.executor` (10 functions, 3 classes)
 📄 `src.docval.chunker` (3 functions)
-📄 `src.docval.cli` (15 functions)
+📄 `src.docval.cli` (16 functions)
 📄 `src.docval.context` (13 functions)
 📦 `src.docval.exporters`
 📄 `src.docval.exporters.github` (10 functions, 1 classes)

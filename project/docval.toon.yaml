@@ -1,0 +1,167 @@
+# docval/documentation | 1f 271L | 2026-04-15
+# stats: 32 chunks | 1103 words | issues: 26
+# health: critical=0 high=12 medium=8 low=6
+
+SUMMARY:
+  files:      1
+  chunks:     32
+  lines:      271
+  words:      1103
+  issues:     26
+
+HEALTH:
+  score:      19/100
+  status:     CRITICAL
+
+ISSUES[26]:
+  ! [error] Internal link target not found: ./CONTRIBUTING.md
+      → /home/tom/github/semcod/docval/docs/README.md:L224-231
+        section: 'Contributing'
+        hint: Check if './CONTRIBUTING.md' was moved or deleted
+        context: "## Contributing  **Contributors:** - Tom Softreck <tom@sapletta.com> - Tom Sapletta <tom-sapletta-co..."
+  ! [error] Internal link target not found: ./examples
+      → /home/tom/github/semcod/docval/docs/README.md:L246-253
+        section: 'Documentation'
+        hint: Check if './examples' was moved or deleted
+        context: "## Documentation  - 📖 [Full Documentation](https://github.com/semcod/docval/tree/main/docs) — API re..."
+  ! [error] Internal link target not found: ./docs/api.md
+      → /home/tom/github/semcod/docval/docs/README.md:L254-271
+        section: 'Generated Files'
+        hint: Check if './docs/api.md' was moved or deleted
+        context: "### Generated Files  | Output | Description | Link | |--------|-------------|------| | `README.md` |..."
+  ! [error] Internal link target not found: ./docs/modules.md
+      → /home/tom/github/semcod/docval/docs/README.md:L254-271
+        section: 'Generated Files'
+        hint: Check if './docs/modules.md' was moved or deleted
+        context: "### Generated Files  | Output | Description | Link | |--------|-------------|------| | `README.md` |..."
+  ! [error] Internal link target not found: ./docs/architecture.md
+      → /home/tom/github/semcod/docval/docs/README.md:L254-271
+        section: 'Generated Files'
+        hint: Check if './docs/architecture.md' was moved or deleted
+        context: "### Generated Files  | Output | Description | Link | |--------|-------------|------| | `README.md` |..."
+  ! [error] Internal link target not found: ./docs/dependency-graph.md
+      → /home/tom/github/semcod/docval/docs/README.md:L254-271
+        section: 'Generated Files'
+        hint: Check if './docs/dependency-graph.md' was moved or deleted
+        context: "### Generated Files  | Output | Description | Link | |--------|-------------|------| | `README.md` |..."
+  ! [error] Internal link target not found: ./docs/coverage.md
+      → /home/tom/github/semcod/docval/docs/README.md:L254-271
+        section: 'Generated Files'
+        hint: Check if './docs/coverage.md' was moved or deleted
+        context: "### Generated Files  | Output | Description | Link | |--------|-------------|------| | `README.md` |..."
+  ! [error] Internal link target not found: ./docs/getting-started.md
+      → /home/tom/github/semcod/docval/docs/README.md:L254-271
+        section: 'Generated Files'
+        hint: Check if './docs/getting-started.md' was moved or deleted
+        context: "### Generated Files  | Output | Description | Link | |--------|-------------|------| | `README.md` |..."
+  ! [error] Internal link target not found: ./docs/configuration.md
+      → /home/tom/github/semcod/docval/docs/README.md:L254-271
+        section: 'Generated Files'
+        hint: Check if './docs/configuration.md' was moved or deleted
+        context: "### Generated Files  | Output | Description | Link | |--------|-------------|------| | `README.md` |..."
+  ! [error] Internal link target not found: ./docs/api-changelog.md
+      → /home/tom/github/semcod/docval/docs/README.md:L254-271
+        section: 'Generated Files'
+        hint: Check if './docs/api-changelog.md' was moved or deleted
+        context: "### Generated Files  | Output | Description | Link | |--------|-------------|------| | `README.md` |..."
+  ! [error] Internal link target not found: ./CONTRIBUTING.md
+      → /home/tom/github/semcod/docval/docs/README.md:L254-271
+        section: 'Generated Files'
+        hint: Check if './CONTRIBUTING.md' was moved or deleted
+        context: "### Generated Files  | Output | Description | Link | |--------|-------------|------| | `README.md` |..."
+  ! [error] Internal link target not found: ./examples
+      → /home/tom/github/semcod/docval/docs/README.md:L254-271
+        section: 'Generated Files'
+        hint: Check if './examples' was moved or deleted
+        context: "### Generated Files  | Output | Description | Link | |--------|-------------|------| | `README.md` |..."
+  ~ [warning] Section has no meaningful content
+      → /home/tom/github/semcod/docval/docs/README.md:L12-13
+        section: 'Installation'
+        context: "## Installation"
+  ~ [warning] Section has no meaningful content
+      → /home/tom/github/semcod/docval/docs/README.md:L36-37
+        section: 'Quick Start'
+        context: "## Quick Start"
+  ~ [warning] Section has no meaningful content
+      → /home/tom/github/semcod/docval/docs/README.md:L38-40
+        section: 'CLI Usage'
+        context: "### CLI Usage  ```bash"
+  ~ [warning] Section has no meaningful content
+      → /home/tom/github/semcod/docval/docs/README.md:L41-43
+        section: 'Generate full documentation for your project'
+        context: "# Generate full documentation for your project docval ./my-project"
+  ~ [warning] Section has no meaningful content
+      → /home/tom/github/semcod/docval/docs/README.md:L153-154
+        section: 'API Overview'
+        context: "## API Overview"
+  ~ [warning] Section has no meaningful content
+      → /home/tom/github/semcod/docval/docs/README.md:L232-234
+        section: 'Development Setup'
+        context: "### Development Setup  ```bash"
+  ~ [warning] Section has no meaningful content
+      → /home/tom/github/semcod/docval/docs/README.md:L242-245
+        section: 'Run tests'
+        context: "# Run tests pytest ```"
+  ~ [warning] References 3 unknown code symbol(s): README.md, CONTRIBUTING.md, mkdocs.yml
+      → /home/tom/github/semcod/docval/docs/README.md:L254-271
+        section: 'Generated Files'
+        hint: These may be outdated API references or typos
+        context: "### Generated Files  | Output | Description | Link | |--------|-------------|------| | `README.md` |..."
+  ~ [info] Section contains only a heading with no body text
+      → /home/tom/github/semcod/docval/docs/README.md:L12-13
+        section: 'Installation'
+        context: "## Installation"
+  ~ [info] Section contains only a heading with no body text
+      → /home/tom/github/semcod/docval/docs/README.md:L36-37
+        section: 'Quick Start'
+        context: "## Quick Start"
+  ~ [info] Contains 1 TODO/FIXME marker(s)
+      → /home/tom/github/semcod/docval/docs/README.md:L147-152
+        section: 'Architecture'
+        context: "## Architecture  ``` docval/ ├── project    ├── docval/        ├── chunker        ├── pipeline..."
+  ~ [info] Section contains only a heading with no body text
+      → /home/tom/github/semcod/docval/docs/README.md:L153-154
+        section: 'API Overview'
+        context: "## API Overview"
+  ~ [info] Contains 2 TODO/FIXME marker(s)
+      → /home/tom/github/semcod/docval/docs/README.md:L155-178
+        section: 'Classes'
+        context: "### Classes  - **`LLMValidator`** — Validate documentation chunks using an LLM via litellm. - **`Heu..."
+  ~ [info] Contains 1 TODO/FIXME marker(s)
+      → /home/tom/github/semcod/docval/docs/README.md:L194-218
+        section: 'Project Structure'
+        context: "## Project Structure  📄 `project` 📦 `src.docval` 📦 `src.docval.actions` 📄 `src.docval.actions.execut..."
+
+ACTIONS[10]:
+  delete:   7 chunks to delete
+  fix:      3 chunks need content fix
+
+REFACTOR:
+  [1] ○ fix_broken_links | 12 broken internal links
+      → Create or fix: ./CONTRIBUTING.md
+      → Create or fix: ./docs/api-changelog.md
+      → Create or fix: ./docs/api.md
+      → Create or fix: ./docs/architecture.md
+      → Create or fix: ./docs/configuration.md
+      → ... and 5 more
+  [2] ○ remove_empty_sections | 10 empty/placeholder sections
+      → Delete sections with no content or add meaningful text
+  [3] ○ fix_orphan_refs | 1 references to unknown symbols
+      → Update references to match actual codebase symbols
+  [4] ○ resolve_todos | 3 TODO/FIXME markers
+      → Implement or remove TODO items
+  [5] ○ delete_obsolete | 7 chunks marked for deletion
+      → Run: docval fix docs/ --no-dry-run to auto-delete
+  [6] ○ fix_content | 3 chunks need content rewrite
+      → Use LLM to rewrite outdated content based on current code
+
+METRICS-TARGET:
+  issues:     26 → 0
+  health:     19/100 → 100/100
+
+DOCUMENTATION:
+  ok:        22 chunks (68%)
+  needs_fix: 10 chunks (31%)
+
+EVOLUTION:
+  2026-04-15 1f 271L 26i 19% // docval scan

@@ -33,3 +33,8 @@ $VENV/bin/code2docs ./ --readme-only
 $VENV/bin/redup scan . --format toon --output ./project
 $VENV/bin/vallm batch . --recursive --format toon --output ./project
 $VENV/bin/prefact -a -e "examples/**"
+
+# Docval - documentation validation and refactoring analysis
+# Generates metrics, status, and refactoring suggestions in toon format
+echo "Running docval documentation analysis..."
+$VENV/bin/docval sync-planfile docs/ --project . --export-toon --no-dry-run

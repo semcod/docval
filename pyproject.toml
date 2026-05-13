@@ -27,7 +27,7 @@ dependencies = [
     "rich>=13.0",
     "pyyaml>=6.0",
     "gitpython>=3.1",
-    "goal>=2.1.0",
+    "goal>=2.1.218",
     "costs>=0.1.20",
     "pfix>=0.1.60",
 ]
@@ -36,7 +36,7 @@ dependencies = [
 llm = ["litellm>=1.0"]
 all = ["docval[llm]"]
 dev = ["pytest>=7.0", "pytest-cov>=4.0", "ruff>=0.1",
-    "goal>=2.1.0",
+    "goal>=2.1.218",
     "costs>=0.1.20",
     "pfix>=0.1.60",
 ]

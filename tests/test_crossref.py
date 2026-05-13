@@ -10,8 +10,12 @@ from docval.validators.crossref import CrossRefValidator
 
 def _make_chunk(content: str, heading: str = "Test") -> DocChunk:
     return DocChunk(
-        file=Path("test.md"), heading=heading, heading_level=2,
-        content=content, line_start=1, line_end=10,
+        file=Path("test.md"),
+        heading=heading,
+        heading_level=2,
+        content=content,
+        line_start=1,
+        line_end=10,
     )
 
 
@@ -23,8 +27,12 @@ def _make_file(chunks: list[DocChunk]) -> DocFile:
 def ctx():
     return ProjectContext(
         root=Path("."),
-        src_files=["todocs/__init__.py", "todocs/cli.py", "todocs/core.py",
-                    "todocs/analyzers/import_graph.py"],
+        src_files=[
+            "todocs/__init__.py",
+            "todocs/cli.py",
+            "todocs/core.py",
+            "todocs/analyzers/import_graph.py",
+        ],
         classes=["ArticleGenerator", "ComparisonGenerator", "ToonParser"],
         functions=["scan_project", "generate_articles", "main"],
         modules=["todocs.cli", "todocs.core", "todocs.analyzers.import_graph"],

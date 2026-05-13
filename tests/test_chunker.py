@@ -1,8 +1,5 @@
 """Tests for the Markdown chunker."""
 
-import tempfile
-from pathlib import Path
-
 import pytest
 
 from docval.chunker import chunk_file, chunk_directory, discover_md_files

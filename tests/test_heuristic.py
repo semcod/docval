@@ -2,13 +2,14 @@
 
 from pathlib import Path
 
-import pytest
 
 from docval.models import ActionType, ChunkStatus, DocChunk, DocFile, ProjectContext
 from docval.validators.heuristic import HeuristicValidator
 
 
-def _make_chunk(content: str, heading: str = "Test", file_name: str = "test.md", line_start: int = 1) -> DocChunk:
+def _make_chunk(
+    content: str, heading: str = "Test", file_name: str = "test.md", line_start: int = 1
+) -> DocChunk:
     return DocChunk(
         file=Path(file_name),
         heading=heading,
@@ -92,15 +93,20 @@ class TestDuplicateDetection:
         chunk1 = _make_chunk(content, heading="Install Guide", file_name="guide1.md")
         chunk2 = _make_chunk(
             content + " Also remember to set PATH correctly.",
-            heading="Installation", file_name="guide2.md"
+            heading="Installation",
+            file_name="guide2.md",
         )
         v = HeuristicValidator()
         v.validate([_make_file([chunk1], "guide1.md"), _make_file([chunk2], "guide2.md")])
         assert chunk2.status == ChunkStatus.DUPLICATE
 
     def test_different_content_not_duplicate(self):
-        chunk1 = _make_chunk("Guide about installing Python packages on Linux systems.", heading="Install")
-        chunk2 = _make_chunk("Reference for the REST API endpoints and authentication.", heading="API")
+        chunk1 = _make_chunk(
+            "Guide about installing Python packages on Linux systems.", heading="Install"
+        )
+        chunk2 = _make_chunk(
+            "Reference for the REST API endpoints and authentication.", heading="API"
+        )
         v = HeuristicValidator()
         v.validate([_make_file([chunk1]), _make_file([chunk2])])
         assert chunk2.status != ChunkStatus.DUPLICATE
