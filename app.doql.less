@@ -1,0 +1,101 @@
+// LESS format — define @variables here as needed
+
+app {
+  name: docval;
+  version: 0.1.5;
+  description: "Validate and refactor Markdown documentation against source code using heuristics + LLM";
+  license: Apache-2.0;
+  authors: "Tom Sapletta <tom@sapletta.com>";
+  keywords: "documentation, validation, refactoring, llm, markdown, static-analysis";
+  homepage: https://github.com/wronai/docval;
+  repository: https://github.com/wronai/docval;
+}
+
+dependencies {
+  runtime: "click>=8.1, rich>=13.0, pyyaml>=6.0, gitpython>=3.1, goal>=2.1.218, costs>=0.1.20, pfix>=0.1.60";
+  llm: litellm>=1.0;
+  all: docval[llm];
+  dev: "pytest>=7.0, pytest-cov>=4.0, ruff>=0.1, goal>=2.1.218, costs>=0.1.20, pfix>=0.1.60";
+}
+
+interface[type="cli"] {
+  framework: click;
+}
+interface[type="cli"] page[name="docval"] {
+  entry: docval.cli:main;
+}
+
+integration[name="github"] {
+  type: scm;
+}
+
+workflow[name="install"] {
+  trigger: manual;
+  step-1: run cmd=pip install -e .[dev];
+}
+
+workflow[name="test"] {
+  trigger: manual;
+  step-1: run cmd=pytest -q;
+}
+
+workflow[name="lint"] {
+  trigger: manual;
+  step-1: run cmd=ruff check .;
+}
+
+workflow[name="fmt"] {
+  trigger: manual;
+  step-1: run cmd=ruff format .;
+}
+
+workflow[name="build"] {
+  trigger: manual;
+  step-1: run cmd=python -m build;
+}
+
+workflow[name="clean"] {
+  trigger: manual;
+  step-1: run cmd=rm -rf build/ dist/ *.egg-info;
+}
+
+workflow[name="health"] {
+  trigger: manual;
+  step-1: run cmd=docker compose ps;
+  step-2: run cmd=docker compose exec app echo "Health check passed";
+}
+
+workflow[name="all"] {
+  trigger: manual;
+  step-1: run cmd=taskfile run install;
+  step-2: run cmd=taskfile run lint;
+  step-3: run cmd=taskfile run test;
+}
+
+workflow[name="help"] {
+  trigger: manual;
+  step-1: run cmd=echo "docval — available tasks:";
+  step-2: run cmd=echo "";
+  step-3: run cmd=taskfile list;
+}
+
+workflow[name="format"] {
+  trigger: manual;
+  step-1: run cmd=ruff format .;
+}
+
+env_vars {
+  keys: OPENAI_API_BASE, OPENAI_API_KEY, OPENROUTER_API_KEY, LLM_MODEL, GITLAB_TOKEN, GITHUB_TOKEN;
+}
+
+deploy {
+  target: pip;
+}
+
+environment[name="local"] {
+  runtime: python;
+  env_file: .env;
+  python_version: >=3.10;
+  vars: LLM_MODEL, OPENAI_API_BASE, OPENAI_API_KEY, OPENROUTER_API_KEY;
+  runtime_llm: OPENROUTER_API_KEY;
+}
