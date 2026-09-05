@@ -269,3 +269,10 @@ pytest
 | `mkdocs.yml` | MkDocs configuration | — |
 
 <!-- code2docs:end -->
+## Documentation ownership and index
+
+Follow the [repository instructions](../AGENTS.md). New final reports belong in `analysis/`, information in `information/`, refactoring plans in `refactoring/` and decisions in `decisions/`; index each delivered document here. Raw logs and backups remain private. Cross-repository results belong in `subactor/docs`.
+
+- [Dependency policy](dependencies.md)
+
+The generated content above retains its historical format; the new documentation profile is not retroactively claimed for it.
