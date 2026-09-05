@@ -204,3 +204,7 @@ _Last updated by [taskill](https://github.com/oqlos/taskill) at 2026-04-25 13:37
 > Add markdown output for documentation generation (docs feature). Commit also added inclusion of commit messages in the markdown output.
 
 <!-- taskill:status:end -->
+
+## Dependency maintenance
+
+See [internal dependency updates](docs/dependencies.md) for daily updates, locked tests and Python support.
