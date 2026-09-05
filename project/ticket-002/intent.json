@@ -1,0 +1,24 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-002",
+  "summary": "Adopt canonical documentation placement and validation",
+  "workstream": "integration",
+  "allowedPaths": [
+    "AGENTS.md",
+    "README.md",
+    "TODO.md",
+    "docs/README.md",
+    ".governance/docs.json",
+    ".github/workflows/test-locked.yml",
+    "project/ticket-002/**"
+  ],
+  "forbiddenPaths": [
+    "project/ticket-*/user-*.md"
+  ],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null,
+  "stacks": [
+    "python"
+  ]
+}

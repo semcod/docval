@@ -208,3 +208,7 @@ _Last updated by [taskill](https://github.com/oqlos/taskill) at 2026-04-25 13:37
 ## Dependency maintenance
 
 See [internal dependency updates](docs/dependencies.md) for daily updates, locked tests and Python support.
+
+## Documentation ownership
+
+Follow [agent documentation instructions](AGENTS.md) and maintain the [documentation index](docs/README.md).
