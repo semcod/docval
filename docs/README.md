@@ -276,3 +276,5 @@ Follow the [repository instructions](../AGENTS.md). New final reports belong in 
 - [Dependency policy](dependencies.md)
 
 The generated content above retains its historical format; the new documentation profile is not retroactively claimed for it.
+
+- [Current source references](information/current-code-references.md) — per-scan symbols and Python import layouts.
