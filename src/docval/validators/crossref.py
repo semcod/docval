@@ -31,18 +31,42 @@ class CrossRefValidator:
     def _build_module_set(self) -> set[str]:
         """Resolve flat/src Python layouts, including package namespaces."""
         paths = [path.replace("\\", "/") for path in self.ctx.src_files]
-        src_layout = "src/__init__.py" not in paths
+        self._src_layout = "src/__init__.py" not in paths
         modules = set(self.ctx.modules)
         modules.update(path[:-3].replace("/", ".") for path in paths if path.endswith(".py"))
         result: set[str] = set()
         for module in modules:
-            if src_layout and module.startswith("src."):
+            if self._src_layout and module.startswith("src."):
                 module = module[4:]
             module = module.removesuffix(".__init__")
             parts = module.split(".")
             if all(part.isidentifier() for part in parts):
                 result.update(".".join(parts[:length]) for length in range(1, len(parts) + 1))
         return result
+
+    def _module_source_exists(self, module: str) -> bool:
+        """Probe an unindexed module without importing it or leaving the root."""
+        parts = module.split(".")
+        if not all(part.isidentifier() for part in parts):
+            return False
+        try:
+            root = self.ctx.root.resolve()
+        except (OSError, RuntimeError):
+            return False
+        source_roots = [root, root / "src"] if self._src_layout else [root]
+        for source_root in source_roots:
+            path = source_root.joinpath(*parts)
+            for candidate, is_package in ((path.with_suffix(".py"), False), (path, True)):
+                try:
+                    resolved = candidate.resolve()
+                    if not resolved.is_relative_to(root):
+                        continue
+                    exists = resolved.is_dir() if is_package else resolved.is_file()
+                    if exists:
+                        return True
+                except (OSError, RuntimeError):
+                    continue
+        return False
 
     def _build_symbol_set(self) -> set[str]:
         """Build a set of all known code symbols (lowercase for matching)."""
@@ -134,7 +158,11 @@ class CrossRefValidator:
 
                 # Check if this is a project-internal import
                 root_package = module.split(".")[0]
-                if root_package in self._internal_roots and module not in self._known_modules:
+                if (
+                    root_package in self._internal_roots
+                    and module not in self._known_modules
+                    and not self._module_source_exists(module)
+                ):
                     chunk.add_issue(
                         "broken_import",
                         Severity.ERROR,

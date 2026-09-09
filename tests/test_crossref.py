@@ -4,6 +4,7 @@ from pathlib import Path
 
 import pytest
 
+from docval.context import build_context
 from docval.models import ChunkStatus, DocChunk, DocFile, ProjectContext
 from docval.validators.crossref import CrossRefValidator
 
@@ -100,6 +101,43 @@ class TestImportPaths:
         issues = [issue for issue in chunk.issues if issue.rule == "broken_import"]
         assert len(issues) == 1
         assert "src.deleted" in issues[0].message
+
+    @pytest.mark.parametrize("prefix", ["", "src/"])
+    def test_import_beyond_context_depth_uses_confined_source_probe(self, tmp_path, prefix):
+        package = tmp_path / prefix / "example"
+        module = package / "a/b/c/d/client.py"
+        module.parent.mkdir(parents=True)
+        module.write_text("class Client: pass\n")
+        (package / "__init__.py").write_text("")
+        context = build_context(tmp_path)
+        assert str(module.relative_to(tmp_path)) not in context.src_files
+        chunk = _make_chunk(
+            "```python\nfrom example.a.b.c.d.client import Client\n"
+            "from example.a.b.c.d import client\n"
+            "from example.a.b.c.d.deleted import Client\n```"
+        )
+        CrossRefValidator(context).validate([_make_file([chunk])])
+        issues = [issue for issue in chunk.issues if issue.rule == "broken_import"]
+        assert len(issues) == 1
+        assert "example.a.b.c.d.deleted" in issues[0].message
+
+    @pytest.mark.parametrize("target_kind", ["module", "namespace"])
+    def test_source_probe_rejects_symlinks_outside_project(self, tmp_path, target_kind):
+        root = tmp_path / "project"
+        package = root / "example"
+        package.mkdir(parents=True)
+        outside = tmp_path / "outside"
+        outside.mkdir()
+        module = outside / "client.py"
+        module.write_text("class Client: pass\n")
+        if target_kind == "module":
+            (package / "escaped.py").symlink_to(module)
+        else:
+            (package / "escaped").symlink_to(outside, target_is_directory=True)
+        context = ProjectContext(root=root, src_files=["example/__init__.py"])
+        chunk = _make_chunk("```python\nfrom example.escaped import Client\n```")
+        CrossRefValidator(context).validate([_make_file([chunk])])
+        assert any(issue.rule == "broken_import" for issue in chunk.issues)
 
 
 @pytest.mark.parametrize("field", ["classes", "functions", "modules", "cli_commands", "endpoints", "dependencies"])
