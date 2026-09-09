@@ -18,26 +18,36 @@ from ..models import (
 )
 
 
-# Cache for symbol sets across validator instances
-_symbol_cache: dict[str, set[str]] = {}
-
-
 class CrossRefValidator:
     """Validate documentation references against actual project code."""
 
     def __init__(self, ctx: ProjectContext):
         self.ctx = ctx
-        # Use cache key based on context hash to avoid rebuilding symbol sets
-        cache_key = f"{ctx.root}:{len(ctx.classes)}:{len(ctx.functions)}"
-        if cache_key in _symbol_cache:
-            self._known_symbols = _symbol_cache[cache_key]
-        else:
-            self._known_symbols = self._build_symbol_set()
-            _symbol_cache[cache_key] = self._known_symbols
+        # A scan owns its context. Equal symbol counts do not identify equal code.
+        self._known_modules = self._build_module_set()
+        self._internal_roots = {name.split(".")[0] for name in self._known_modules}
+        self._known_symbols = self._build_symbol_set()
+
+    def _build_module_set(self) -> set[str]:
+        """Resolve flat/src Python layouts, including package namespaces."""
+        paths = [path.replace("\\", "/") for path in self.ctx.src_files]
+        src_layout = "src/__init__.py" not in paths
+        modules = set(self.ctx.modules)
+        modules.update(path[:-3].replace("/", ".") for path in paths if path.endswith(".py"))
+        result: set[str] = set()
+        for module in modules:
+            if src_layout and module.startswith("src."):
+                module = module[4:]
+            module = module.removesuffix(".__init__")
+            parts = module.split(".")
+            if all(part.isidentifier() for part in parts):
+                result.update(".".join(parts[:length]) for length in range(1, len(parts) + 1))
+        return result
 
     def _build_symbol_set(self) -> set[str]:
         """Build a set of all known code symbols (lowercase for matching)."""
         symbols: set[str] = set()
+        symbols.update(module.lower() for module in self._known_modules)
 
         for name in self.ctx.classes:
             symbols.add(name.lower())
@@ -124,21 +134,13 @@ class CrossRefValidator:
 
                 # Check if this is a project-internal import
                 root_package = module.split(".")[0]
-                is_internal = any(
-                    src.startswith(root_package + "/") or src.startswith(root_package + ".")
-                    for src in self.ctx.src_files
-                )
-
-                if is_internal and module.lower() not in self._known_symbols:
-                    # Check partial match
-                    parts = module.lower().split(".")
-                    if not any(p in self._known_symbols for p in parts):
-                        chunk.add_issue(
-                            "broken_import",
-                            Severity.ERROR,
-                            f"Code example imports '{module}' which doesn't exist in project",
-                            suggestion="Update the import path or remove the example",
-                        )
+                if root_package in self._internal_roots and module not in self._known_modules:
+                    chunk.add_issue(
+                        "broken_import",
+                        Severity.ERROR,
+                        f"Code example imports '{module}' which doesn't exist in project",
+                        suggestion="Update the import path or remove the example",
+                    )
 
     def _check_cli_commands(self, chunk: DocChunk):
         """Check CLI command references in code blocks."""

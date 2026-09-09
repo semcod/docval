@@ -1,0 +1,27 @@
+{
+  "schema": "new-project.intent/v3",
+  "ticket": "ticket-006",
+  "summary": "SESSION_EXECUTION_AUTHORIZATION: inspect Search-backed intent drift and repair the evidenced stale side",
+  "workstream": "application",
+  "classification": {
+    "kind": "SERVICE",
+    "priority": "P2",
+    "origin": "health"
+  },
+  "allowedPaths": [
+    "src/docval/validators/crossref.py",
+    "tests/test_crossref.py",
+    "docs/information/current-code-references.md",
+    "docs/README.md",
+    "project/ticket-006/**"
+  ],
+  "forbiddenPaths": [
+    ".env",
+    "secrets/**",
+    "project/ticket-*/user-*.md"
+  ],
+  "stacks": [],
+  "dependsOn": [],
+  "conflictsWith": [],
+  "integrationTicket": null
+}
