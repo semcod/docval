@@ -187,6 +187,11 @@ def _print_sync_planfile_help():
 @click.version_option(package_name="docval")
 def main():
     """Validate and refactor Markdown documentation against source code."""
+    try:
+        from docval.autoupdate import check_for_updates
+        check_for_updates("docval")
+    except Exception:
+        pass
     _load_env()
 
 
